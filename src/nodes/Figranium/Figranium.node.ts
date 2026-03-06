@@ -10,11 +10,11 @@ import type {
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
-export class Doppelganger implements INodeType {
+export class Figranium implements INodeType {
   methods = {
     loadOptions: {
       async getTasks(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-        const credentials = await this.getCredentials('doppelgangerApi');
+        const credentials = await this.getCredentials('figraniumApi');
         const baseUrl = String(credentials.baseUrl || '').replace(/\/+$/, '');
 
         if (!baseUrl) {
@@ -30,7 +30,7 @@ export class Doppelganger implements INodeType {
 
           const response = await this.helpers.requestWithAuthentication.call(
             this,
-            'doppelgangerApi',
+            'figraniumApi',
             options,
           );
 
@@ -48,7 +48,7 @@ export class Doppelganger implements INodeType {
             .filter((option) => option.value)
             .sort((a, b) => a.name.localeCompare(b.name));
         } catch (error) {
-          throw new NodeOperationError(this.getNode(), 'Error fetching options from Doppelganger.', {
+          throw new NodeOperationError(this.getNode(), 'Error fetching options from Figranium.', {
             itemIndex: 0,
           });
         }
@@ -57,12 +57,12 @@ export class Doppelganger implements INodeType {
   };
 
   description: INodeTypeDescription = {
-    displayName: 'Doppelganger',
-    name: 'doppelganger',
-    icon: 'file:icon.png',
+    displayName: 'Figranium',
+    name: 'figranium',
+    icon: 'file:figranium_icon.svg',
     group: ['transform'],
     version: 1,
-    description: 'Run a Doppelganger task via the API',
+    description: 'Run a Figranium task via the API',
     defaults: {
       name: 'Execute Task',
     },
@@ -71,7 +71,7 @@ export class Doppelganger implements INodeType {
     usableAsTool: true,
     credentials: [
       {
-        name: 'doppelgangerApi',
+        name: 'figraniumApi',
         required: true,
       },
     ],
@@ -85,7 +85,7 @@ export class Doppelganger implements INodeType {
           {
             name: 'Execute Task',
             value: 'executeTask',
-            description: 'Run a Doppelganger task',
+            description: 'Run a Figranium task',
             action: 'Execute a task',
           },
         ],
@@ -165,7 +165,7 @@ export class Doppelganger implements INodeType {
         }
       }
 
-      const credentials = await this.getCredentials('doppelgangerApi');
+      const credentials = await this.getCredentials('figraniumApi');
       const baseUrl = String(credentials.baseUrl || '').replace(/\/+$/, '');
 
       if (!baseUrl) {
@@ -185,7 +185,7 @@ export class Doppelganger implements INodeType {
 
       const response = await this.helpers.requestWithAuthentication.call(
         this,
-        'doppelgangerApi',
+        'figraniumApi',
         options,
       );
 

@@ -1,11 +1,11 @@
 {
-  "name": "n8n-nodes-doppelganger",
-  "version": "0.4.2",
-  "description": "n8n node for running Doppelganger tasks",
+  "name": "n8n-nodes-figranium",
+  "version": "0.4.3",
+  "description": "n8n node for Figranium",
   "license": "Apache-2.0",
   "keywords": [
     "n8n-community-node-package",
-    "doppelganger",
+    "figranium",
     "automation"
   ],
   "main": "dist/index.js",
@@ -27,10 +27,10 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "nodes": [
-      "dist/nodes/Doppelganger/Doppelganger.node.js"
+      "dist/nodes/Figranium/Figranium.node.js"
     ],
     "credentials": [
-      "dist/credentials/DoppelgangerApi.credentials.js"
+      "dist/credentials/FigraniumApi.credentials.js"
     ]
   }
 }

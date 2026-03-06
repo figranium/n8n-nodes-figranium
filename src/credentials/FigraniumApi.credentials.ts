@@ -1,9 +1,9 @@
 import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 
-export class DoppelgangerApi implements ICredentialType {
-  name = 'doppelgangerApi';
-  displayName = 'Doppelganger API';
-  documentationUrl = 'https://doppelgangerdev.com/docs/api-authentication-and-secure-access';
+export class FigraniumApi implements ICredentialType {
+  name = 'figraniumApi';
+  displayName = 'Figranium API';
+  documentationUrl = 'https://figranium.com/docs/api-authentication-and-secure-access';
   properties: INodeProperties[] = [
     {
       displayName: 'Base URL',
@@ -11,7 +11,7 @@ export class DoppelgangerApi implements ICredentialType {
       type: 'string',
       default: 'http://localhost:11345',
       required: true,
-      description: 'Doppelganger server base URL',
+      description: 'Figranium server base URL',
     },
     {
       displayName: 'API Key',
@@ -20,7 +20,7 @@ export class DoppelgangerApi implements ICredentialType {
       typeOptions: { password: true },
       default: '',
       required: true,
-      description: 'API key from Doppelganger Settings',
+      description: 'API key from Figranium Settings',
     },
   ];
 

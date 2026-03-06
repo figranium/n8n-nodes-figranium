@@ -1,4 +1,4 @@
-import { Doppelganger } from './nodes/Doppelganger/Doppelganger.node';
-import { DoppelgangerApi } from './credentials/DoppelgangerApi.credentials';
+import { Figranium } from './nodes/Figranium/Figranium.node';
+import { FigraniumApi } from './credentials/FigraniumApi.credentials';
 
-export { Doppelganger, DoppelgangerApi };
+export { Figranium, FigraniumApi };

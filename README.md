@@ -1,29 +1,29 @@
-# n8n-nodes-doppelganger
+# n8n-nodes-figranium
 
-Official n8n community node that lets you run Doppelganger tasks directly through your workflow using the local or remote Doppelganger API.
+Official n8n community node that lets you run Figranium tasks directly through your workflow using the local or remote Figranium API.
 
 ## Highlights
 
 - Single `Execute Task` operation that posts to `POST /tasks/:id/api` with optional variables.
-- Credential-based authentication, so each workflow can point at a different Doppelganger server or API key.
+- Credential-based authentication, so each workflow can point at a different Figranium server or API key.
 - Task dropdown is populated dynamically by calling `/api/tasks/list`, keeping the node synchronized with what the server exposes.
 
 ## Requirements
 
 - n8n (cloud or self-hosted) with community nodes enabled.
-- Doppelganger server reachable from wherever n8n is running (default `http://localhost:11345`).
-- Valid API key created via Doppelganger Settings.
+- Figranium server reachable from wherever n8n is running (default `http://localhost:11345`).
+- Valid API key created via Figranium Settings.
 
 ## Documentation
 
-- For a full walkthrough of the n8n integration, see the official Doppelganger docs: https://doppelgangerdev.com/docs/n8n-integration.
+- For a full walkthrough of the n8n integration, see the official Figranium docs: https://figranium.com/docs/n8n-integration.
 
 ## Installation
 
 ### Classic (recommended)
 
 1. In n8n, go to **Settings -> Community Nodes**.
-2. Enter `n8n-nodes-doppelganger`.
+2. Enter `n8n-nodes-figranium`.
 3. Install the package and restart n8n if prompted.
 
 ### Manual (from source)
@@ -39,7 +39,7 @@ This compiles the TypeScript sources under `src/` to `dist/`, copies the bundled
 
 ### Credentials
 
-The node uses the `Doppelganger API` credential type, which captures:
+The node uses the `Figranium API` credential type, which captures:
 
 - **Base URL** - defaults to `http://localhost:11345`. Trim trailing slashes.
 - **API Key** - stored securely and sent in the `x-api-key` header on every request.
@@ -54,8 +54,8 @@ When you connect the credential, the node can reach the `/api/tasks/list` endpoi
 
 ## Usage
 
-1. Add the `Doppelganger` node to your workflow and attach it to the steps that should trigger a task.
-2. Select your `Doppelganger API` credential.
+1. Add the `Figranium` node to your workflow and attach it to the steps that should trigger a task.
+2. Select your `Figranium API` credential.
 3. Pick the task to run from the dropdown; it calls `/api/tasks/list` automatically via the credential.
 4. Optionally define `Variables` to override or inject runtime data, either by hardcoding strings or by using expressions that reference previous nodes.
 
@@ -74,12 +74,12 @@ Body:
   }
 ```
 
-The node returns the JSON response from Doppelganger as the output data for downstream nodes.
+The node returns the JSON response from Figranium as the output data for downstream nodes.
 
 ## Troubleshooting
 
-- **Tasks list is empty** - confirm the credential's Base URL/API key, ensure n8n can reach the Doppelganger server, and that `/api/tasks/list` returns a payload.
-- **Task run fails with HTTP error** - review the Doppelganger logs for task-specific errors and confirm that the task ID exists.
+- **Tasks list is empty** - confirm the credential's Base URL/API key, ensure n8n can reach the Figranium server, and that `/api/tasks/list` returns a payload.
+- **Task run fails with HTTP error** - review the Figranium logs for task-specific errors and confirm that the task ID exists.
 - **Variables are ignored** - make sure each entry in the `Variables` collection has a non-empty `Name`; values can be empty strings but names are required.
 
 ## Development
