@@ -62,7 +62,7 @@ export class Figranium implements INodeType {
     icon: 'file:figranium_icon.svg',
     group: ['transform'],
     version: 1,
-    description: 'Run a Figranium task via the API',
+    description: 'Seamlessly trigger and manage automated Figranium tasks directly from your n8n workflows. Pass custom variables and retrieve execution results in real-time.',
     defaults: {
       name: 'Execute Task',
     },
