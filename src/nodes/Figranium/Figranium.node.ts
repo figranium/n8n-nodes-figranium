@@ -52,38 +52,6 @@ export class Figranium implements INodeType {
         }
       },
 
-      async getCredentialsList(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-        const credentials = await this.getCredentials('figraniumApi');
-        const baseUrl = String(credentials.baseUrl || '').replace(/\/+$/, '');
-
-        if (!baseUrl) {
-          return [];
-        }
-
-        try {
-          const response = await this.helpers.requestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'GET' as IHttpRequestMethods,
-              url: `${baseUrl}/api/credentials`,
-              json: true,
-            },
-          );
-
-          const list = Array.isArray(response) ? response : [];
-          return list
-            .map((cred: IDataObject) => ({
-              name: `${String(cred.name || cred.id)} (${String(cred.provider || '')})`,
-              value: String(cred.id || ''),
-            }))
-            .filter((option) => option.value);
-        } catch {
-          throw new NodeOperationError(this.getNode(), 'Error fetching credentials from Figranium.', {
-            itemIndex: 0,
-          });
-        }
-      },
     },
   };
 
@@ -93,7 +61,7 @@ export class Figranium implements INodeType {
     icon: 'file:figranium_icon.svg',
     group: ['transform'],
     version: 1,
-    description: 'Interact with Figranium — trigger tasks, inspect executions, manage schedules, and control credentials.',
+    description: 'Interact with Figranium — trigger tasks, inspect executions, and manage schedules.',
     defaults: {
       name: 'Figranium',
     },
@@ -128,11 +96,6 @@ export class Figranium implements INodeType {
             name: 'Schedule',
             value: 'schedule',
             description: 'View and manage task schedules',
-          },
-          {
-            name: 'Credential',
-            value: 'credential',
-            description: 'Manage output provider credentials (e.g. Baserow)',
           },
         ],
         default: 'task',
@@ -240,57 +203,6 @@ export class Figranium implements INodeType {
         default: 'list',
       },
 
-      // ─── CREDENTIAL operations ────────────────────────────────────────────
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-          },
-        },
-        options: [
-          {
-            name: 'List',
-            value: 'list',
-            description: 'Return all saved output-provider credentials',
-            action: 'List credentials',
-          },
-          {
-            name: 'Create',
-            value: 'create',
-            description: 'Save a new output-provider credential',
-            action: 'Create a credential',
-          },
-          {
-            name: 'Update',
-            value: 'update',
-            description: 'Update the name or config of an existing credential',
-            action: 'Update a credential',
-          },
-          {
-            name: 'Delete',
-            value: 'delete',
-            description: 'Permanently remove a credential',
-            action: 'Delete a credential',
-          },
-          {
-            name: 'Get Baserow Databases',
-            value: 'getBaserowDatabases',
-            description: 'List all Baserow databases accessible by a credential',
-            action: 'Get Baserow databases',
-          },
-          {
-            name: 'Get Baserow Tables',
-            value: 'getBaserowTables',
-            description: 'List all tables within a Baserow database',
-            action: 'Get Baserow tables',
-          },
-        ],
-        default: 'list',
-      },
 
       // ─── Shared: Task ID (execute) ────────────────────────────────────────
       {
@@ -518,138 +430,6 @@ export class Figranium implements INodeType {
         },
       },
 
-      // ─── Credential: Create / Update ──────────────────────────────────────
-      {
-        displayName: 'Credential',
-        name: 'credentialId',
-        type: 'options',
-        typeOptions: {
-          loadOptionsMethod: 'getCredentialsList',
-        },
-        default: '',
-        required: true,
-        description: 'The credential to work with',
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-            operation: ['update', 'delete', 'getBaserowDatabases', 'getBaserowTables'],
-          },
-        },
-      },
-      {
-        displayName: 'Name',
-        name: 'credentialName',
-        type: 'string',
-        default: '',
-        required: true,
-        description: 'A human-readable name for the credential',
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-            operation: ['create'],
-          },
-        },
-      },
-      {
-        displayName: 'Provider',
-        name: 'credentialProvider',
-        type: 'options',
-        options: [
-          { name: 'Baserow', value: 'baserow' },
-        ],
-        default: 'baserow',
-        required: true,
-        description: 'The output provider type',
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-            operation: ['create'],
-          },
-        },
-      },
-      {
-        displayName: 'Baserow URL',
-        name: 'credentialBaseUrl',
-        type: 'string',
-        default: '',
-        placeholder: 'https://baserow.example.com',
-        required: true,
-        description: 'The base URL of your Baserow instance',
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-            operation: ['create'],
-          },
-        },
-      },
-      {
-        displayName: 'Baserow Token',
-        name: 'credentialToken',
-        type: 'string',
-        typeOptions: { password: true },
-        default: '',
-        required: true,
-        description: 'Database token from your Baserow account',
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-            operation: ['create'],
-          },
-        },
-      },
-      // Update fields (optional — only values provided are changed)
-      {
-        displayName: 'Update Fields',
-        name: 'updateFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-            operation: ['update'],
-          },
-        },
-        options: [
-          {
-            displayName: 'Name',
-            name: 'name',
-            type: 'string',
-            default: '',
-            description: 'New display name for the credential',
-          },
-          {
-            displayName: 'Baserow URL',
-            name: 'baseUrl',
-            type: 'string',
-            default: '',
-            description: 'New Baserow base URL',
-          },
-          {
-            displayName: 'Baserow Token',
-            name: 'token',
-            type: 'string',
-            typeOptions: { password: true },
-            default: '',
-            description: 'New Baserow database token',
-          },
-        ],
-      },
-      // Baserow database ID (for table listing)
-      {
-        displayName: 'Database ID',
-        name: 'databaseId',
-        type: 'string',
-        default: '',
-        required: true,
-        description: 'The Baserow database ID to list tables for',
-        displayOptions: {
-          show: {
-            resource: ['credential'],
-            operation: ['getBaserowTables'],
-          },
-        },
-      },
     ],
   };
 
@@ -845,101 +625,6 @@ export class Figranium implements INodeType {
           ) as IDataObject;
         } else {
           throw new NodeOperationError(this.getNode(), `Unsupported schedule operation: ${operation}`, { itemIndex: i });
-        }
-
-      // ── CREDENTIAL ────────────────────────────────────────────────────────
-      } else if (resource === 'credential') {
-        if (operation === 'list') {
-          response = await this.helpers.requestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'GET' as IHttpRequestMethods,
-              url: `${baseUrl}/api/credentials`,
-              json: true,
-            },
-          ) as IDataObject[];
-        } else if (operation === 'create') {
-          const name = this.getNodeParameter('credentialName', i) as string;
-          const provider = this.getNodeParameter('credentialProvider', i) as string;
-          const credBaseUrl = this.getNodeParameter('credentialBaseUrl', i) as string;
-          const token = this.getNodeParameter('credentialToken', i) as string;
-
-          response = await this.helpers.requestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'POST' as IHttpRequestMethods,
-              url: `${baseUrl}/api/credentials`,
-              body: {
-                name,
-                provider,
-                config: { baseUrl: credBaseUrl, token },
-              },
-              json: true,
-            },
-          ) as IDataObject;
-        } else if (operation === 'update') {
-          const credentialId = this.getNodeParameter('credentialId', i) as string;
-          const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
-
-          const body: IDataObject = {};
-          if (updateFields.name) body.name = updateFields.name;
-          if (updateFields.baseUrl || updateFields.token) {
-            body.config = {};
-            if (updateFields.baseUrl) (body.config as IDataObject).baseUrl = updateFields.baseUrl;
-            if (updateFields.token) (body.config as IDataObject).token = updateFields.token;
-          }
-
-          response = await this.helpers.requestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'PUT' as IHttpRequestMethods,
-              url: `${baseUrl}/api/credentials/${encodeURIComponent(credentialId)}`,
-              body,
-              json: true,
-            },
-          ) as IDataObject;
-        } else if (operation === 'delete') {
-          const credentialId = this.getNodeParameter('credentialId', i) as string;
-
-          response = await this.helpers.requestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'DELETE' as IHttpRequestMethods,
-              url: `${baseUrl}/api/credentials/${encodeURIComponent(credentialId)}`,
-              json: true,
-            },
-          ) as IDataObject;
-        } else if (operation === 'getBaserowDatabases') {
-          const credentialId = this.getNodeParameter('credentialId', i) as string;
-
-          response = await this.helpers.requestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'GET' as IHttpRequestMethods,
-              url: `${baseUrl}/api/credentials/${encodeURIComponent(credentialId)}/proxy/baserow/databases`,
-              json: true,
-            },
-          ) as IDataObject[];
-        } else if (operation === 'getBaserowTables') {
-          const credentialId = this.getNodeParameter('credentialId', i) as string;
-          const databaseId = this.getNodeParameter('databaseId', i) as string;
-
-          response = await this.helpers.requestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'GET' as IHttpRequestMethods,
-              url: `${baseUrl}/api/credentials/${encodeURIComponent(credentialId)}/proxy/baserow/databases/${encodeURIComponent(databaseId)}/tables`,
-              json: true,
-            },
-          ) as IDataObject[];
-        } else {
-          throw new NodeOperationError(this.getNode(), `Unsupported credential operation: ${operation}`, { itemIndex: i });
         }
 
       } else {
