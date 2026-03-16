@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-figranium",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Official n8n community node for Figranium. Connect to local or remote Figranium servers to automate tasks with dynamic variable injection and real-time response handling.",
   "license": "Apache-2.0",
   "keywords": [
