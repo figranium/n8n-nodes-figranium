@@ -42,6 +42,7 @@ export class Figranium implements INodeType {
             .map((task) => ({
               name: String(task?.name || task?.id || ''),
               value: String(task?.id || ''),
+              description: task?.description ? String(task.description) : undefined,
             }))
             .filter((option) => option.value)
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -122,7 +123,7 @@ export class Figranium implements INodeType {
           {
             name: 'List',
             value: 'list',
-            description: 'Return all task IDs and names',
+            description: 'Return all task IDs, names, and descriptions',
             action: 'List tasks',
           },
         ],
