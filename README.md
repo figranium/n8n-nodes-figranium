@@ -1,12 +1,32 @@
 # n8n-nodes-figranium
 
-Official n8n community node that lets you run Figranium tasks directly through your workflow using the local or remote Figranium API.
+Official n8n community node for [Figranium](https://figranium.dev) — trigger tasks, inspect executions, and manage schedules directly from your n8n workflows.
 
-## Highlights
+## Resources and operations
 
-- Single `Execute Task` operation that posts to `POST /tasks/:id/api` with optional variables.
-- Credential-based authentication, so each workflow can point at a different Figranium server or API key.
-- Task dropdown is populated dynamically by calling `/api/tasks/list`, keeping the node synchronized with what the server exposes.
+### Task
+
+| Operation | Description |
+|---|---|
+| **Execute** | Run a saved task and return its result. Accepts optional runtime variables. |
+| **List** | Return all task IDs, names, and descriptions from the server. |
+
+### Execution
+
+| Operation | Description |
+|---|---|
+| **List** | Return a summary of all past execution records. |
+
+### Schedule
+
+| Operation | Description |
+|---|---|
+| **List** | Return all tasks that have a schedule configured. |
+| **Get Status** | Get the schedule config and next run time for a specific task. |
+| **Set Schedule** | Create or update a schedule on a task (frequency-based or cron). |
+| **Delete Schedule** | Disable and remove the schedule from a task. |
+| **Describe Schedule** | Validate and preview a schedule config without saving it. |
+| **Get Scheduler Status** | Return the overall status of the task scheduler. |
 
 ## Requirements
 
@@ -16,15 +36,15 @@ Official n8n community node that lets you run Figranium tasks directly through y
 
 ## Documentation
 
-- For a full walkthrough of the n8n integration, see the official Figranium docs: https://figranium.dev/docs/n8n-integration.
+Full walkthrough of the n8n integration: https://figranium.dev/docs/n8n-integration
 
 ## Installation
 
 ### Classic (recommended)
 
-1. In n8n, go to **Settings -> Community Nodes**.
+1. In n8n, go to **Settings → Community Nodes**.
 2. Enter `n8n-nodes-figranium`.
-3. Install the package and restart n8n if prompted.
+3. Install and restart n8n if prompted.
 
 ### Manual (from source)
 
@@ -33,66 +53,57 @@ npm install
 npm run build
 ```
 
-This compiles the TypeScript sources under `src/` to `dist/`, copies the bundled assets, and makes the package usable as a community node.
-
 ## Configuration
 
 ### Credentials
 
-The node uses the `Figranium API` credential type, which captures:
+The node uses the `Figranium API` credential type:
 
-- **Base URL** - defaults to `http://localhost:11345`. Trim trailing slashes.
-- **API Key** - stored securely and sent in the `x-api-key` header on every request.
+- **Base URL** — your Figranium server address, e.g. `http://localhost:11345`. Trim trailing slashes.
+- **API Key** — stored securely and sent as `x-api-key` on every request.
 
-When you connect the credential, the node can reach the `/api/tasks/list` endpoint to populate the **Task** dropdown.
+### Task › Execute
 
-### Node fields
+- **Task** — choose from the dropdown, which is populated via `/api/tasks/list`. Each option shows the task name and description (if set).
+- **Variables** — optional key/value pairs injected at runtime under `variables` in the request body. Names are required; values can be empty strings.
 
-- **Operation** - currently only `Execute Task`.
-- **Task** - choose a task ID from the loaded list; the list is sorted by name and falls back to the raw ID when no name exists.
-- **Variables** - optional fixed collection of key/value pairs that are sent in the request body under `variables`. Leave blank to trigger the task with its default inputs.
+### Schedule › Set Schedule
 
-## Usage
+- **Schedule Mode** — `Frequency` (interval/daily/weekly/monthly) or `Cron Expression`.
+- Frequency fields (hour, minute, days of week, day of month) appear based on the selected frequency.
+- Cron accepts a standard 5-field expression, e.g. `0 9 * * 1`.
 
-1. Add the `Figranium` node to your workflow and attach it to the steps that should trigger a task.
-2. Select your `Figranium API` credential.
-3. Pick the task to run from the dropdown; it calls `/api/tasks/list` automatically via the credential.
-4. Optionally define `Variables` to override or inject runtime data, either by hardcoding strings or by using expressions that reference previous nodes.
-
-Each execution performs:
+## Usage example — Execute a task with variables
 
 ```
-POST {baseUrl}/tasks/:taskId/api
-Headers:
-  x-api-key: {api key}
-Body:
-  {
-    "variables": {
-      "<name>": "<value>",
-      ...
-    }
+POST {baseUrl}/api/tasks/{taskId}/api
+x-api-key: {apiKey}
+
+{
+  "variables": {
+    "url": "https://example.com",
+    "limit": "10"
   }
+}
 ```
 
-The node returns the JSON response from Figranium as the output data for downstream nodes.
+The node returns the JSON response from Figranium as output data for downstream nodes.
 
 ## Troubleshooting
 
-- **Tasks list is empty** - confirm the credential's Base URL/API key, ensure n8n can reach the Figranium server, and that `/api/tasks/list` returns a payload.
-- **Task run fails with HTTP error** - review the Figranium logs for task-specific errors and confirm that the task ID exists.
-- **Variables are ignored** - make sure each entry in the `Variables` collection has a non-empty `Name`; values can be empty strings but names are required.
+- **Task dropdown is empty** — confirm the credential Base URL and API key, ensure n8n can reach the Figranium server, and check that `/api/tasks/list` returns data.
+- **Execute fails with HTTP error** — check Figranium logs for task-specific errors and confirm the task ID still exists.
+- **Variables are ignored** — each entry in the Variables collection must have a non-empty Name.
+- **Schedule operations fail** — confirm the Task ID is correct and that the Figranium scheduler is running (`Get Scheduler Status`).
 
 ## Development
 
-- `npm run build` compiles TypeScript sources and copies icons into `dist/`.
-- After building, publish the package to npm (if desired) or load the folder as a local community node archive.
+```bash
+npm run build   # compile TypeScript + copy icons to dist/
+```
 
-## Contributing
-
-1. Fork this repo, implement fixes or nodes in `src/`, and push a topic branch.
-2. Run `npm run build` to regenerate `dist/` before submitting a pull request.
-3. Describe how to reproduce or test your changes in the PR description.
+Load the package as a local community node or publish to npm.
 
 ## License
 
-Apache License 2.0 - see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](LICENSE).
