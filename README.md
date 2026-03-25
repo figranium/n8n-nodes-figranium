@@ -16,7 +16,7 @@ Official n8n community node that lets you run Figranium tasks directly through y
 
 ## Documentation
 
-- For a full walkthrough of the n8n integration, see the official Figranium docs: https://figranium.com/docs/n8n-integration.
+- For a full walkthrough of the n8n integration, see the official Figranium docs: https://figranium.dev/docs/n8n-integration.
 
 ## Installation
 
