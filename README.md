@@ -96,6 +96,29 @@ The node returns the JSON response from Figranium as output data for downstream 
 - **Variables are ignored** — each entry in the Variables collection must have a non-empty Name.
 - **Schedule operations fail** — confirm the Task ID is correct and that the Figranium scheduler is running (`Get Scheduler Status`).
 
+### Toggling n8n workflows programmatically
+
+If you provision or activate/deactivate n8n workflows from a script or pipeline (not through this node, but the same n8n instance it targets), be aware of a few things that are n8n-core behavior, not specific to Figranium:
+
+- **"Active" in the database ≠ "running" in the process.** The n8n CLI writes workflow state straight to the database, but a running n8n process doesn't reload from the DB. A workflow toggled via the CLI will show as active/inactive everywhere you look (DB, workflow list) while the running process's actual execution behavior hasn't changed — the worst kind of bug to chase because every inspection says it worked. Always toggle workflows through n8n's **public REST API**, not the CLI, when doing this programmatically.
+- **`import:workflow` deactivates the workflow it imports.** Don't assume an imported workflow keeps its prior active state — re-activate it explicitly after import.
+- **The endpoints are `activate` / `deactivate`, not `publish`.** Hitting a `publish` endpoint returns a 405.
+- **Send `Content-Type: application/json` with a `{}` body**, even for calls with no real payload. Omitting it produces a 415 that reads like an auth/permissions problem but isn't.
+
+**Diagnosing "it's active but nothing happens":** the DB record and the running process can disagree, so check both sides instead of trusting one:
+
+```bash
+# 1. What the DB / API says (this is what the UI and CLI both show)
+curl -s {n8nBaseUrl}/api/v1/workflows/{workflowId} \
+  -H "X-N8N-API-KEY: {apiKey}" | jq '.active'
+
+# 2. What the running process is actually doing — recent executions for this workflow
+curl -s "{n8nBaseUrl}/api/v1/executions?workflowId={workflowId}&limit=5" \
+  -H "X-N8N-API-KEY: {apiKey}" | jq '.data[] | {id, startedAt, status}'
+```
+
+If (1) says `active: true` but (2) shows no executions where you'd expect them (e.g. a trigger has clearly fired but nothing ran), the process hasn't picked up the DB change. Restarting the n8n process forces it to reload — that's the reliable fix once you've confirmed the split, rather than re-toggling active/inactive and hoping.
+
 ## Development
 
 ```bash
