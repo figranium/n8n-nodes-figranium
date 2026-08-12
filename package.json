@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/figranium/n8n-nodes-figranium/issues"
   },
-  "homepage": "https://github.com/figranium/n8n-nodes-figranium#readme",
+  "homepage": "https://figranium.dev",
   "files": [
     "dist"
   ],
