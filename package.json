@@ -1,28 +1,47 @@
 {
   "name": "n8n-nodes-figranium",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Official n8n community node for Figranium. Connect to local or remote Figranium servers to automate tasks with dynamic variable injection and real-time response handling.",
-  "license": "Apache-2.0",
   "keywords": [
     "n8n-community-node-package",
     "figranium",
     "automation"
   ],
+  "license": "Apache-2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/figranium/n8n-nodes-figranium.git"
+  },
+  "bugs": {
+    "url": "https://github.com/figranium/n8n-nodes-figranium/issues"
+  },
+  "homepage": "https://github.com/figranium/n8n-nodes-figranium#readme",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && copyfiles -u 1 \"src/nodes/**/*.{png,svg}\" dist"
+    "build": "tsc -p tsconfig.json && copyfiles -u 1 \"src/**/*.{png,svg}\" dist",
+    "lint": "eslint \"src/**/*.{ts,js}\"",
+    "lintfix": "eslint \"src/**/*.{ts,js}\" --fix",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "n8n-workflow": "^1.0.0"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "copyfiles": "^2.4.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.11.0",
     "n8n-core": "^1.0.0",
-    "typescript": "^5.9.3"
+    "n8n-nodes-base": "^1.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
   },
   "n8n": {
     "n8nNodesApiVersion": 1,
