@@ -9,6 +9,30 @@ import type {
   INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
+import type { INode } from 'n8n-workflow';
+
+const JSON_FIELD_NAMES = ['stealth', 'actions', 'variables'];
+
+/**
+ * n8n `json`-type collection fields arrive as strings; the Figranium API
+ * expects real objects/arrays for stealth, actions, and variables.
+ */
+function parseJsonFields(node: INode, fields: IDataObject): IDataObject {
+  const result: IDataObject = { ...fields };
+  for (const key of JSON_FIELD_NAMES) {
+    const raw = result[key];
+    if (typeof raw === 'string' && raw.trim() !== '') {
+      try {
+        result[key] = JSON.parse(raw);
+      } catch {
+        throw new NodeOperationError(node, `Invalid JSON in "${key}" field.`);
+      }
+    } else if (raw === '' || raw === undefined) {
+      delete result[key];
+    }
+  }
+  return result;
+}
 
 export class Figranium implements INodeType {
   methods = {
@@ -98,6 +122,16 @@ export class Figranium implements INodeType {
             value: 'schedule',
             description: 'View and manage task schedules',
           },
+          {
+            name: 'Browser',
+            value: 'browser',
+            description: 'Launch a managed browser session',
+          },
+          {
+            name: 'Inspector',
+            value: 'inspector',
+            description: 'Highlight and inspect elements on an active browser session',
+          },
         ],
         default: 'task',
       },
@@ -125,6 +159,24 @@ export class Figranium implements INodeType {
             value: 'list',
             description: 'Return all task IDs, names, and descriptions',
             action: 'List tasks',
+          },
+          {
+            name: 'Create',
+            value: 'create',
+            description: 'Create a new automation task',
+            action: 'Create a task',
+          },
+          {
+            name: 'Update',
+            value: 'update',
+            description: 'Update fields on an existing task',
+            action: 'Update a task',
+          },
+          {
+            name: 'Delete',
+            value: 'delete',
+            description: 'Permanently delete a task',
+            action: 'Delete a task',
           },
         ],
         default: 'execute',
@@ -204,8 +256,52 @@ export class Figranium implements INodeType {
         default: 'list',
       },
 
+      // ─── BROWSER operations ─────────────────────────────────────────────────
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: {
+          show: {
+            resource: ['browser'],
+          },
+        },
+        options: [
+          {
+            name: 'Open',
+            value: 'open',
+            description: 'Launch or reattach a managed browser session',
+            action: 'Open a browser session',
+          },
+        ],
+        default: 'open',
+      },
 
-      // ─── Shared: Task ID (execute) ────────────────────────────────────────
+      // ─── INSPECTOR operations ───────────────────────────────────────────────
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: {
+          show: {
+            resource: ['inspector'],
+          },
+        },
+        options: [
+          {
+            name: 'Highlight',
+            value: 'highlight',
+            description: 'Highlight and inspect elements on an active browser session',
+            action: 'Highlight elements',
+          },
+        ],
+        default: 'highlight',
+      },
+
+
+      // ─── Shared: Task ID (execute / update / delete) ───────────────────────
       {
         displayName: 'Task',
         name: 'taskId',
@@ -219,7 +315,7 @@ export class Figranium implements INodeType {
         displayOptions: {
           show: {
             resource: ['task'],
-            operation: ['execute'],
+            operation: ['execute', 'update', 'delete'],
           },
         },
       },
@@ -431,6 +527,234 @@ export class Figranium implements INodeType {
         },
       },
 
+      // ─── Task: Create — required fields ────────────────────────────────────
+      {
+        displayName: 'Name',
+        name: 'name',
+        type: 'string',
+        default: '',
+        required: true,
+        description: 'Descriptive name of the automation task',
+        displayOptions: {
+          show: {
+            resource: ['task'],
+            operation: ['create'],
+          },
+        },
+      },
+      {
+        displayName: 'URL',
+        name: 'url',
+        type: 'string',
+        default: '',
+        required: true,
+        description: 'Initial URL to navigate to when the task starts',
+        displayOptions: {
+          show: {
+            resource: ['task'],
+            operation: ['create'],
+          },
+        },
+      },
+      {
+        displayName: 'Mode',
+        name: 'mode',
+        type: 'options',
+        options: [
+          { name: 'Scrape', value: 'scrape', description: 'Fast, non-interactive, headless' },
+          { name: 'Agent', value: 'agent', description: 'Automated browser interaction, multi-step' },
+          { name: 'Headful', value: 'headful', description: 'Visible, interactive debug session' },
+        ],
+        default: 'scrape',
+        required: true,
+        description: 'Execution mode for the task',
+        displayOptions: {
+          show: {
+            resource: ['task'],
+            operation: ['create'],
+          },
+        },
+      },
+
+      // ─── Task: Create / Update — optional fields ───────────────────────────
+      {
+        displayName: 'Additional Fields',
+        name: 'taskAdditionalFields',
+        type: 'collection',
+        placeholder: 'Add Field',
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ['task'],
+            operation: ['create'],
+          },
+        },
+        options: [
+          { displayName: 'Description', name: 'description', type: 'string', default: '' },
+          { displayName: 'Wait (Seconds)', name: 'wait', type: 'number', default: 3, description: 'Delay after navigation/page loads' },
+          { displayName: 'Selector', name: 'selector', type: 'string', default: '', description: 'CSS selector to wait for before starting actions' },
+          { displayName: 'Rotate User Agents', name: 'rotateUserAgents', type: 'boolean', default: false },
+          { displayName: 'Rotate Proxies', name: 'rotateProxies', type: 'boolean', default: false },
+          { displayName: 'Rotate Viewport', name: 'rotateViewport', type: 'boolean', default: false },
+          { displayName: 'Human Typing', name: 'humanTyping', type: 'boolean', default: false },
+          {
+            displayName: 'Extraction Format',
+            name: 'extractionFormat',
+            type: 'options',
+            options: [
+              { name: 'JSON', value: 'json' },
+              { name: 'CSV', value: 'csv' },
+            ],
+            default: 'json',
+          },
+          { displayName: 'Include HTML', name: 'includeHtml', type: 'boolean', default: false },
+          { displayName: 'Include Shadow DOM', name: 'includeShadowDom', type: 'boolean', default: true },
+          { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
+          { displayName: 'Stateless Execution', name: 'statelessExecution', type: 'boolean', default: false },
+          { displayName: 'Extraction Script', name: 'extractionScript', type: 'string', typeOptions: { rows: 3 }, default: '', description: 'Optional post-execution script to extract data' },
+          { displayName: 'Stealth (JSON)', name: 'stealth', type: 'json', default: '{}', description: 'Stealth/anti-bot config object, e.g. { "allowTypos": true, "cursorGlide": true }' },
+          { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]', description: 'Array of sequential action step objects' },
+          { displayName: 'Variables (JSON)', name: 'variables', type: 'json', default: '{}', description: 'Object of task variable definitions: { name: { type, value } }' },
+        ],
+      },
+      {
+        displayName: 'Update Fields',
+        name: 'taskUpdateFields',
+        type: 'collection',
+        placeholder: 'Add Field',
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ['task'],
+            operation: ['update'],
+          },
+        },
+        options: [
+          { displayName: 'Name', name: 'name', type: 'string', default: '' },
+          { displayName: 'Description', name: 'description', type: 'string', default: '' },
+          { displayName: 'URL', name: 'url', type: 'string', default: '' },
+          {
+            displayName: 'Mode',
+            name: 'mode',
+            type: 'options',
+            options: [
+              { name: 'Scrape', value: 'scrape' },
+              { name: 'Agent', value: 'agent' },
+              { name: 'Headful', value: 'headful' },
+            ],
+            default: 'scrape',
+          },
+          { displayName: 'Wait (Seconds)', name: 'wait', type: 'number', default: 3 },
+          { displayName: 'Selector', name: 'selector', type: 'string', default: '' },
+          { displayName: 'Rotate User Agents', name: 'rotateUserAgents', type: 'boolean', default: false },
+          { displayName: 'Rotate Proxies', name: 'rotateProxies', type: 'boolean', default: false },
+          { displayName: 'Rotate Viewport', name: 'rotateViewport', type: 'boolean', default: false },
+          { displayName: 'Human Typing', name: 'humanTyping', type: 'boolean', default: false },
+          {
+            displayName: 'Extraction Format',
+            name: 'extractionFormat',
+            type: 'options',
+            options: [
+              { name: 'JSON', value: 'json' },
+              { name: 'CSV', value: 'csv' },
+            ],
+            default: 'json',
+          },
+          { displayName: 'Include HTML', name: 'includeHtml', type: 'boolean', default: false },
+          { displayName: 'Include Shadow DOM', name: 'includeShadowDom', type: 'boolean', default: true },
+          { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
+          { displayName: 'Stateless Execution', name: 'statelessExecution', type: 'boolean', default: false },
+          { displayName: 'Extraction Script', name: 'extractionScript', type: 'string', typeOptions: { rows: 3 }, default: '' },
+          { displayName: 'Stealth (JSON)', name: 'stealth', type: 'json', default: '{}' },
+          { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]' },
+          { displayName: 'Variables (JSON)', name: 'variables', type: 'json', default: '{}' },
+        ],
+      },
+
+      // ─── Browser: Open ──────────────────────────────────────────────────────
+      {
+        displayName: 'URL',
+        name: 'browserUrl',
+        type: 'string',
+        default: '',
+        description: 'Initial URL to navigate to when the browser opens',
+        displayOptions: {
+          show: {
+            resource: ['browser'],
+            operation: ['open'],
+          },
+        },
+      },
+      {
+        displayName: 'Additional Fields',
+        name: 'browserAdditionalFields',
+        type: 'collection',
+        placeholder: 'Add Field',
+        default: {},
+        displayOptions: {
+          show: {
+            resource: ['browser'],
+            operation: ['open'],
+          },
+        },
+        options: [
+          {
+            displayName: 'Mode',
+            name: 'mode',
+            type: 'options',
+            options: [
+              { name: 'Headful', value: 'headful' },
+              { name: 'Scrape', value: 'scrape' },
+              { name: 'Agent', value: 'agent' },
+            ],
+            default: 'headful',
+            description: 'Informational only — only headful is currently supported via the VNC stack',
+          },
+          { displayName: 'Dev Tools', name: 'devTools', type: 'boolean', default: false, description: 'Whether to open DevTools automatically' },
+        ],
+      },
+
+      // ─── Inspector: Highlight ───────────────────────────────────────────────
+      {
+        displayName: 'Session ID',
+        name: 'sessionId',
+        type: 'string',
+        default: '',
+        description: 'Active browser session ID. Leave empty to use the current session or launch one via URL.',
+        displayOptions: {
+          show: {
+            resource: ['inspector'],
+            operation: ['highlight'],
+          },
+        },
+      },
+      {
+        displayName: 'URL',
+        name: 'inspectorUrl',
+        type: 'string',
+        default: '',
+        description: 'Optional URL to navigate to before highlighting',
+        displayOptions: {
+          show: {
+            resource: ['inspector'],
+            operation: ['highlight'],
+          },
+        },
+      },
+      {
+        displayName: 'Target Hint',
+        name: 'targetHint',
+        type: 'string',
+        default: '',
+        description: 'Optional text or hint (e.g. "login button") to find and highlight target elements',
+        displayOptions: {
+          show: {
+            resource: ['inspector'],
+            operation: ['highlight'],
+          },
+        },
+      },
+
     ],
   };
 
@@ -482,6 +806,52 @@ export class Figranium implements INodeType {
             {
               method: 'GET' as IHttpRequestMethods,
               url: `${baseUrl}/api/tasks/list`,
+              json: true,
+            },
+          ) as IDataObject;
+        } else if (operation === 'create') {
+          const name = this.getNodeParameter('name', i) as string;
+          const url = this.getNodeParameter('url', i) as string;
+          const mode = this.getNodeParameter('mode', i) as string;
+          const additionalFields = this.getNodeParameter('taskAdditionalFields', i, {}) as IDataObject;
+
+          const body: IDataObject = { name, url, mode, ...parseJsonFields(this.getNode(), additionalFields) };
+
+          response = await this.helpers.httpRequestWithAuthentication.call(
+            this,
+            'figraniumApi',
+            {
+              method: 'POST' as IHttpRequestMethods,
+              url: `${baseUrl}/api/tasks`,
+              body,
+              json: true,
+            },
+          ) as IDataObject;
+        } else if (operation === 'update') {
+          const taskId = this.getNodeParameter('taskId', i) as string;
+          const updateFields = this.getNodeParameter('taskUpdateFields', i, {}) as IDataObject;
+
+          const body: IDataObject = parseJsonFields(this.getNode(), updateFields);
+
+          response = await this.helpers.httpRequestWithAuthentication.call(
+            this,
+            'figraniumApi',
+            {
+              method: 'PATCH' as IHttpRequestMethods,
+              url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}`,
+              body,
+              json: true,
+            },
+          ) as IDataObject;
+        } else if (operation === 'delete') {
+          const taskId = this.getNodeParameter('taskId', i) as string;
+
+          response = await this.helpers.httpRequestWithAuthentication.call(
+            this,
+            'figraniumApi',
+            {
+              method: 'DELETE' as IHttpRequestMethods,
+              url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}`,
               json: true,
             },
           ) as IDataObject;
@@ -626,6 +996,55 @@ export class Figranium implements INodeType {
           ) as IDataObject;
         } else {
           throw new NodeOperationError(this.getNode(), `Unsupported schedule operation: ${operation}`, { itemIndex: i });
+        }
+
+      // ── BROWSER ───────────────────────────────────────────────────────────
+      } else if (resource === 'browser') {
+        if (operation === 'open') {
+          const browserUrl = this.getNodeParameter('browserUrl', i) as string;
+          const additionalFields = this.getNodeParameter('browserAdditionalFields', i, {}) as IDataObject;
+
+          const body: IDataObject = { ...additionalFields };
+          if (browserUrl) body.url = browserUrl;
+
+          response = await this.helpers.httpRequestWithAuthentication.call(
+            this,
+            'figraniumApi',
+            {
+              method: 'POST' as IHttpRequestMethods,
+              url: `${baseUrl}/api/browser/open`,
+              body,
+              json: true,
+            },
+          ) as IDataObject;
+        } else {
+          throw new NodeOperationError(this.getNode(), `Unsupported browser operation: ${operation}`, { itemIndex: i });
+        }
+
+      // ── INSPECTOR ─────────────────────────────────────────────────────────
+      } else if (resource === 'inspector') {
+        if (operation === 'highlight') {
+          const sessionId = this.getNodeParameter('sessionId', i) as string;
+          const inspectorUrl = this.getNodeParameter('inspectorUrl', i) as string;
+          const targetHint = this.getNodeParameter('targetHint', i) as string;
+
+          const body: IDataObject = {};
+          if (sessionId) body.sessionId = sessionId;
+          if (inspectorUrl) body.url = inspectorUrl;
+          if (targetHint) body.targetHint = targetHint;
+
+          response = await this.helpers.httpRequestWithAuthentication.call(
+            this,
+            'figraniumApi',
+            {
+              method: 'POST' as IHttpRequestMethods,
+              url: `${baseUrl}/api/inspector/highlight`,
+              body,
+              json: true,
+            },
+          ) as IDataObject;
+        } else {
+          throw new NodeOperationError(this.getNode(), `Unsupported inspector operation: ${operation}`, { itemIndex: i });
         }
 
       } else {

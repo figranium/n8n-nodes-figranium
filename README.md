@@ -10,6 +10,9 @@ Official n8n community node for [Figranium](https://figranium.dev) — trigger t
 |---|---|
 | **Execute** | Run a saved task and return its result. Accepts optional runtime variables. |
 | **List** | Return all task IDs, names, and descriptions from the server. |
+| **Create** | Create a new automation task (URL, mode, actions, variables, stealth config, and more). |
+| **Update** | Update fields on an existing task. Only the fields you set are sent (partial update). |
+| **Delete** | Permanently delete a task. |
 
 ### Execution
 
@@ -27,6 +30,18 @@ Official n8n community node for [Figranium](https://figranium.dev) — trigger t
 | **Delete Schedule** | Disable and remove the schedule from a task. |
 | **Describe Schedule** | Validate and preview a schedule config without saving it. |
 | **Get Scheduler Status** | Return the overall status of the task scheduler. |
+
+### Browser
+
+| Operation | Description |
+|---|---|
+| **Open** | Launch or reattach a managed browser session. Currently headful-only. |
+
+### Inspector
+
+| Operation | Description |
+|---|---|
+| **Highlight** | Highlight and inspect elements on an active browser session, with an optional text/selector hint. |
 
 ## Requirements
 
@@ -67,11 +82,29 @@ The node uses the `Figranium API` credential type:
 - **Task** — choose from the dropdown, which is populated via `/api/tasks/list`. Each option shows the task name and description (if set).
 - **Variables** — optional key/value pairs injected at runtime under `variables` in the request body. Names are required; values can be empty strings.
 
+### Task › Create / Update
+
+- **Name**, **URL**, **Mode** (`Scrape` / `Agent` / `Headful`) are required on Create; all fields are optional on Update — only what you set is sent as a partial patch.
+- **Additional Fields** / **Update Fields** cover the remaining task config: description, wait, selector, extraction options, rotation/stealth toggles, and three raw-JSON fields:
+  - **Actions (JSON)** — the ordered array of automation step objects (`navigate`, `click`, `type`, `wait_selector`, `if`/`else`/`end`, etc.). See the [n8n integration docs](https://figranium.dev/docs/n8n-integration) for the full action schema.
+  - **Variables (JSON)** — an object of variable definitions, e.g. `{ "myVar": { "type": "string", "value": "" } }`.
+  - **Stealth (JSON)** — anti-bot/human-behavior flags, e.g. `{ "allowTypos": true, "cursorGlide": true }`.
+
 ### Schedule › Set Schedule
 
 - **Schedule Mode** — `Frequency` (interval/daily/weekly/monthly) or `Cron Expression`.
 - Frequency fields (hour, minute, days of week, day of month) appear based on the selected frequency.
 - Cron accepts a standard 5-field expression, e.g. `0 9 * * 1`.
+
+### Browser › Open
+
+- **URL** — optional starting URL for the session.
+- **Mode** is currently informational only — only `Headful` sessions are supported via the VNC stack.
+
+### Inspector › Highlight
+
+- **Session ID** — optional; targets a specific active session. If omitted, the current session is used (or one is launched via **URL**).
+- **Target Hint** — optional text/selector hint to narrow down which elements get highlighted.
 
 ## Usage example — Execute a task with variables
 
