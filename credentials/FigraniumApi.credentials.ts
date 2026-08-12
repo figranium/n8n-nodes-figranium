@@ -1,4 +1,4 @@
-import type { ICredentialType, INodeProperties } from 'n8n-workflow';
+import type { ICredentialTestRequest, ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class FigraniumApi implements ICredentialType {
   name = 'figraniumApi';
@@ -32,4 +32,12 @@ export class FigraniumApi implements ICredentialType {
       },
     },
   } as const;
+
+  test: ICredentialTestRequest = {
+    request: {
+      baseURL: '={{$credentials.baseUrl}}',
+      url: '/api/tasks/list',
+      method: 'GET',
+    },
+  };
 }

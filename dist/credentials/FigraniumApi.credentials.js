@@ -33,6 +33,13 @@ class FigraniumApi {
                 },
             },
         };
+        this.test = {
+            request: {
+                baseURL: '={{$credentials.baseUrl}}',
+                url: '/api/tasks/list',
+                method: 'GET',
+            },
+        };
     }
 }
 exports.FigraniumApi = FigraniumApi;
