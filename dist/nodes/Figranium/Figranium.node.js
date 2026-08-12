@@ -69,12 +69,13 @@ class Figranium {
             icon: { light: 'file:figranium_icon_light.svg', dark: 'file:figranium_icon_dark.svg' },
             group: ['transform'],
             version: 1,
+            subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
             description: 'Interact with Figranium — trigger tasks, inspect executions, and manage schedules.',
             defaults: {
                 name: 'Figranium',
             },
-            inputs: ['main'],
-            outputs: ['main'],
+            inputs: [n8n_workflow_1.NodeConnectionTypes.Main],
+            outputs: [n8n_workflow_1.NodeConnectionTypes.Main],
             usableAsTool: true,
             credentials: [
                 {
@@ -91,9 +92,9 @@ class Figranium {
                     noDataExpression: true,
                     options: [
                         {
-                            name: 'Task',
-                            value: 'task',
-                            description: 'Manage and execute automation tasks',
+                            name: 'Browser',
+                            value: 'browser',
+                            description: 'Launch a managed browser session',
                         },
                         {
                             name: 'Execution',
@@ -101,19 +102,19 @@ class Figranium {
                             description: 'Inspect past execution records',
                         },
                         {
+                            name: 'Inspector',
+                            value: 'inspector',
+                            description: 'Highlight and inspect elements on an active browser session',
+                        },
+                        {
                             name: 'Schedule',
                             value: 'schedule',
                             description: 'View and manage task schedules',
                         },
                         {
-                            name: 'Browser',
-                            value: 'browser',
-                            description: 'Launch a managed browser session',
-                        },
-                        {
-                            name: 'Inspector',
-                            value: 'inspector',
-                            description: 'Highlight and inspect elements on an active browser session',
+                            name: 'Task',
+                            value: 'task',
+                            description: 'Manage and execute automation tasks',
                         },
                     ],
                     default: 'task',
@@ -131,6 +132,18 @@ class Figranium {
                     },
                     options: [
                         {
+                            name: 'Create',
+                            value: 'create',
+                            description: 'Create a new automation task',
+                            action: 'Create a task',
+                        },
+                        {
+                            name: 'Delete',
+                            value: 'delete',
+                            description: 'Permanently delete a task',
+                            action: 'Delete a task',
+                        },
+                        {
                             name: 'Execute',
                             value: 'execute',
                             description: 'Run a saved task and return its result',
@@ -143,22 +156,10 @@ class Figranium {
                             action: 'List tasks',
                         },
                         {
-                            name: 'Create',
-                            value: 'create',
-                            description: 'Create a new automation task',
-                            action: 'Create a task',
-                        },
-                        {
                             name: 'Update',
                             value: 'update',
                             description: 'Update fields on an existing task',
                             action: 'Update a task',
-                        },
-                        {
-                            name: 'Delete',
-                            value: 'delete',
-                            description: 'Permanently delete a task',
-                            action: 'Delete a task',
                         },
                     ],
                     default: 'execute',
@@ -197,24 +198,6 @@ class Figranium {
                     },
                     options: [
                         {
-                            name: 'List',
-                            value: 'list',
-                            description: 'Return all tasks that have schedules configured',
-                            action: 'List schedules',
-                        },
-                        {
-                            name: 'Get Status',
-                            value: 'getStatus',
-                            description: 'Get the schedule status and next run time for a specific task',
-                            action: 'Get schedule status',
-                        },
-                        {
-                            name: 'Set Schedule',
-                            value: 'set',
-                            description: 'Create or update a schedule on a task',
-                            action: 'Set a schedule',
-                        },
-                        {
                             name: 'Delete Schedule',
                             value: 'delete',
                             description: 'Disable and remove the schedule from a task',
@@ -231,6 +214,24 @@ class Figranium {
                             value: 'getAllStatus',
                             description: 'Return the overall status of the task scheduler',
                             action: 'Get overall scheduler status',
+                        },
+                        {
+                            name: 'Get Status',
+                            value: 'getStatus',
+                            description: 'Get the schedule status and next run time for a specific task',
+                            action: 'Get schedule status',
+                        },
+                        {
+                            name: 'List',
+                            value: 'list',
+                            description: 'Return all tasks that have schedules configured',
+                            action: 'List schedules',
+                        },
+                        {
+                            name: 'Set Schedule',
+                            value: 'set',
+                            description: 'Create or update a schedule on a task',
+                            action: 'Set a schedule',
                         },
                     ],
                     default: 'list',
@@ -279,7 +280,7 @@ class Figranium {
                 },
                 // ─── Shared: Task ID (execute / update / delete) ───────────────────────
                 {
-                    displayName: 'Task',
+                    displayName: 'Task Name or ID',
                     name: 'taskId',
                     type: 'options',
                     typeOptions: {
@@ -287,7 +288,7 @@ class Figranium {
                     },
                     default: '',
                     required: true,
-                    description: 'The task to work with',
+                    description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
                     displayOptions: {
                         show: {
                             resource: ['task'],
@@ -316,7 +317,6 @@ class Figranium {
                     name: 'variables',
                     type: 'fixedCollection',
                     default: {},
-                    required: false,
                     description: 'Key-value pairs passed into the task at runtime',
                     typeOptions: {
                         multipleValues: true,
@@ -561,13 +561,9 @@ class Figranium {
                         },
                     },
                     options: [
+                        { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]', description: 'Array of sequential action step objects' },
                         { displayName: 'Description', name: 'description', type: 'string', default: '' },
-                        { displayName: 'Wait (Seconds)', name: 'wait', type: 'number', default: 3, description: 'Delay after navigation/page loads' },
-                        { displayName: 'Selector', name: 'selector', type: 'string', default: '', description: 'CSS selector to wait for before starting actions' },
-                        { displayName: 'Rotate User Agents', name: 'rotateUserAgents', type: 'boolean', default: false },
-                        { displayName: 'Rotate Proxies', name: 'rotateProxies', type: 'boolean', default: false },
-                        { displayName: 'Rotate Viewport', name: 'rotateViewport', type: 'boolean', default: false },
-                        { displayName: 'Human Typing', name: 'humanTyping', type: 'boolean', default: false },
+                        { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
                         {
                             displayName: 'Extraction Format',
                             name: 'extractionFormat',
@@ -578,14 +574,18 @@ class Figranium {
                             ],
                             default: 'json',
                         },
+                        { displayName: 'Extraction Script', name: 'extractionScript', type: 'string', typeOptions: { rows: 3 }, default: '', description: 'Optional post-execution script to extract data' },
+                        { displayName: 'Human Typing', name: 'humanTyping', type: 'boolean', default: false },
                         { displayName: 'Include HTML', name: 'includeHtml', type: 'boolean', default: false },
                         { displayName: 'Include Shadow DOM', name: 'includeShadowDom', type: 'boolean', default: true },
-                        { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
+                        { displayName: 'Rotate Proxies', name: 'rotateProxies', type: 'boolean', default: false },
+                        { displayName: 'Rotate User Agents', name: 'rotateUserAgents', type: 'boolean', default: false },
+                        { displayName: 'Rotate Viewport', name: 'rotateViewport', type: 'boolean', default: false },
+                        { displayName: 'Selector', name: 'selector', type: 'string', default: '', description: 'CSS selector to wait for before starting actions' },
                         { displayName: 'Stateless Execution', name: 'statelessExecution', type: 'boolean', default: false },
-                        { displayName: 'Extraction Script', name: 'extractionScript', type: 'string', typeOptions: { rows: 3 }, default: '', description: 'Optional post-execution script to extract data' },
                         { displayName: 'Stealth (JSON)', name: 'stealth', type: 'json', default: '{}', description: 'Stealth/anti-bot config object, e.g. { "allowTypos": true, "cursorGlide": true }' },
-                        { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]', description: 'Array of sequential action step objects' },
                         { displayName: 'Variables (JSON)', name: 'variables', type: 'json', default: '{}', description: 'Object of task variable definitions: { name: { type, value } }' },
+                        { displayName: 'Wait (Seconds)', name: 'wait', type: 'number', default: 3, description: 'Delay after navigation/page loads' },
                     ],
                 },
                 {
@@ -601,9 +601,23 @@ class Figranium {
                         },
                     },
                     options: [
-                        { displayName: 'Name', name: 'name', type: 'string', default: '' },
+                        { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]' },
                         { displayName: 'Description', name: 'description', type: 'string', default: '' },
-                        { displayName: 'URL', name: 'url', type: 'string', default: '' },
+                        { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
+                        {
+                            displayName: 'Extraction Format',
+                            name: 'extractionFormat',
+                            type: 'options',
+                            options: [
+                                { name: 'JSON', value: 'json' },
+                                { name: 'CSV', value: 'csv' },
+                            ],
+                            default: 'json',
+                        },
+                        { displayName: 'Extraction Script', name: 'extractionScript', type: 'string', typeOptions: { rows: 3 }, default: '' },
+                        { displayName: 'Human Typing', name: 'humanTyping', type: 'boolean', default: false },
+                        { displayName: 'Include HTML', name: 'includeHtml', type: 'boolean', default: false },
+                        { displayName: 'Include Shadow DOM', name: 'includeShadowDom', type: 'boolean', default: true },
                         {
                             displayName: 'Mode',
                             name: 'mode',
@@ -615,30 +629,16 @@ class Figranium {
                             ],
                             default: 'scrape',
                         },
-                        { displayName: 'Wait (Seconds)', name: 'wait', type: 'number', default: 3 },
-                        { displayName: 'Selector', name: 'selector', type: 'string', default: '' },
-                        { displayName: 'Rotate User Agents', name: 'rotateUserAgents', type: 'boolean', default: false },
+                        { displayName: 'Name', name: 'name', type: 'string', default: '' },
                         { displayName: 'Rotate Proxies', name: 'rotateProxies', type: 'boolean', default: false },
+                        { displayName: 'Rotate User Agents', name: 'rotateUserAgents', type: 'boolean', default: false },
                         { displayName: 'Rotate Viewport', name: 'rotateViewport', type: 'boolean', default: false },
-                        { displayName: 'Human Typing', name: 'humanTyping', type: 'boolean', default: false },
-                        {
-                            displayName: 'Extraction Format',
-                            name: 'extractionFormat',
-                            type: 'options',
-                            options: [
-                                { name: 'JSON', value: 'json' },
-                                { name: 'CSV', value: 'csv' },
-                            ],
-                            default: 'json',
-                        },
-                        { displayName: 'Include HTML', name: 'includeHtml', type: 'boolean', default: false },
-                        { displayName: 'Include Shadow DOM', name: 'includeShadowDom', type: 'boolean', default: true },
-                        { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
+                        { displayName: 'Selector', name: 'selector', type: 'string', default: '' },
                         { displayName: 'Stateless Execution', name: 'statelessExecution', type: 'boolean', default: false },
-                        { displayName: 'Extraction Script', name: 'extractionScript', type: 'string', typeOptions: { rows: 3 }, default: '' },
                         { displayName: 'Stealth (JSON)', name: 'stealth', type: 'json', default: '{}' },
-                        { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]' },
+                        { displayName: 'URL', name: 'url', type: 'string', default: '' },
                         { displayName: 'Variables (JSON)', name: 'variables', type: 'json', default: '{}' },
+                        { displayName: 'Wait (Seconds)', name: 'wait', type: 'number', default: 3 },
                     ],
                 },
                 // ─── Browser: Open ──────────────────────────────────────────────────────
@@ -970,11 +970,11 @@ class Figranium {
             // Normalise response: arrays become multiple items, objects become one
             if (Array.isArray(response)) {
                 for (const item of response) {
-                    returnData.push({ json: item });
+                    returnData.push({ json: item, pairedItem: { item: i } });
                 }
             }
             else {
-                returnData.push({ json: response });
+                returnData.push({ json: response, pairedItem: { item: i } });
             }
         }
         return [returnData];

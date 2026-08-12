@@ -3,6 +3,7 @@ import type { ICredentialTestRequest, ICredentialType, INodeProperties } from 'n
 export class FigraniumApi implements ICredentialType {
   name = 'figraniumApi';
   displayName = 'Figranium API';
+  icon = { light: 'file:figranium_icon_light.svg', dark: 'file:figranium_icon_dark.svg' } as const;
   documentationUrl = 'https://figranium.com/docs/api-authentication-and-secure-access';
   properties: INodeProperties[] = [
     {

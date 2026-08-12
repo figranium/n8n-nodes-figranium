@@ -2,6 +2,10 @@ import type { ICredentialTestRequest, ICredentialType, INodeProperties } from 'n
 export declare class FigraniumApi implements ICredentialType {
     name: string;
     displayName: string;
+    icon: {
+        readonly light: "file:figranium_icon_light.svg";
+        readonly dark: "file:figranium_icon_dark.svg";
+    };
     documentationUrl: string;
     properties: INodeProperties[];
     authenticate: {

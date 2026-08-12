@@ -5,6 +5,7 @@ class FigraniumApi {
     constructor() {
         this.name = 'figraniumApi';
         this.displayName = 'Figranium API';
+        this.icon = { light: 'file:figranium_icon_light.svg', dark: 'file:figranium_icon_dark.svg' };
         this.documentationUrl = 'https://figranium.com/docs/api-authentication-and-secure-access';
         this.properties = [
             {
