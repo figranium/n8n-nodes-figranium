@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-figranium",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "author": {
     "name": "Figranium",
     "email": "asernasr@figranium.dev"
@@ -29,11 +29,10 @@
     "build": "tsc -p tsconfig.json && copyfiles -u 1 \"src/**/*.{png,svg}\" dist",
     "lint": "eslint \"src/**/*.{ts,js}\"",
     "lintfix": "eslint \"src/**/*.{ts,js}\" --fix",
+    "test": "echo \"No test specified\" && exit 0",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {
-    "n8n-workflow": "^1.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@typescript-eslint/parser": "^7.0.0",
@@ -42,6 +41,7 @@
     "eslint-plugin-n8n-nodes-base": "^1.11.0",
     "n8n-core": "^1.0.0",
     "n8n-nodes-base": "^1.0.0",
+    "n8n-workflow": "^1.0.0",
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
