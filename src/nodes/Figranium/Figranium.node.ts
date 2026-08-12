@@ -22,7 +22,7 @@ export class Figranium implements INodeType {
         }
 
         try {
-          const response = await this.helpers.requestWithAuthentication.call(
+          const response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -59,7 +59,7 @@ export class Figranium implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Figranium',
     name: 'figranium',
-    icon: 'file:figranium_icon.svg',
+    icon: { light: 'file:figranium_icon_light.svg', dark: 'file:figranium_icon_dark.svg' },
     group: ['transform'],
     version: 1,
     description: 'Interact with Figranium — trigger tasks, inspect executions, and manage schedules.',
@@ -465,7 +465,7 @@ export class Figranium implements INodeType {
             if (key) variables[key] = entry.value ?? '';
           }
 
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -476,7 +476,7 @@ export class Figranium implements INodeType {
             },
           ) as IDataObject;
         } else if (operation === 'list') {
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -492,7 +492,7 @@ export class Figranium implements INodeType {
       // ── EXECUTION ─────────────────────────────────────────────────────────
       } else if (resource === 'execution') {
         if (operation === 'list') {
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -508,7 +508,7 @@ export class Figranium implements INodeType {
       // ── SCHEDULE ──────────────────────────────────────────────────────────
       } else if (resource === 'schedule') {
         if (operation === 'list') {
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -518,7 +518,7 @@ export class Figranium implements INodeType {
             },
           ) as IDataObject;
         } else if (operation === 'getAllStatus') {
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -529,7 +529,7 @@ export class Figranium implements INodeType {
           ) as IDataObject;
         } else if (operation === 'getStatus') {
           const taskId = this.getNodeParameter('taskIdString', i) as string;
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -540,7 +540,7 @@ export class Figranium implements INodeType {
           ) as IDataObject;
         } else if (operation === 'delete') {
           const taskId = this.getNodeParameter('taskIdString', i) as string;
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -578,7 +578,7 @@ export class Figranium implements INodeType {
             }
           }
 
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
@@ -614,7 +614,7 @@ export class Figranium implements INodeType {
             }
           }
 
-          response = await this.helpers.requestWithAuthentication.call(
+          response = await this.helpers.httpRequestWithAuthentication.call(
             this,
             'figraniumApi',
             {
