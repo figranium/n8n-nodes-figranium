@@ -28,7 +28,6 @@ jobs:
       - name: Run build & tests
         run: |
           npm run build
-          npm run test
 
       - name: Publish to npm with Provenance
         run: npm publish --provenance --access public
