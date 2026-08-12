@@ -26,9 +26,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && copyfiles -u 1 \"src/**/*.{png,svg}\" dist",
-    "lint": "eslint \"src/**/*.{ts,js}\"",
-    "lintfix": "eslint \"src/**/*.{ts,js}\" --fix",
+    "build": "tsc -p tsconfig.json && copyfiles \"nodes/**/*.{png,svg}\" \"credentials/**/*.{png,svg}\" dist",
+    "lint": "eslint \"nodes/**/*.{ts,js}\" \"credentials/**/*.{ts,js}\" index.ts",
+    "lintfix": "eslint \"nodes/**/*.{ts,js}\" \"credentials/**/*.{ts,js}\" index.ts --fix",
     "test": "echo \"No test specified\" && exit 0",
     "prepublishOnly": "npm run build"
   },

@@ -5,10 +5,10 @@
     "lib": ["ES2019"],
     "declaration": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["index.ts", "nodes/**/*.ts", "credentials/**/*.ts"]
 }
