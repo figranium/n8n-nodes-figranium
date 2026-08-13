@@ -10,8 +10,74 @@ import type {
   INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 const JSON_FIELD_NAMES = ['stealth', 'actions', 'variables'];
+
+export interface FigraniumStats {
+  runCount: number;
+  firstRunTime: number;
+  askedMilestone?: boolean;
+}
+
+export function getStatsPath(): string {
+  try {
+    return path.join(os.homedir(), '.figranium_stats.json');
+  } catch {
+    return path.join(os.tmpdir(), '.figranium_stats.json');
+  }
+}
+
+export function loadStats(): FigraniumStats {
+  const filePath = getStatsPath();
+  try {
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch {
+    // Ignore errors
+  }
+  return { runCount: 0, firstRunTime: Date.now() };
+}
+
+export function saveStats(stats: FigraniumStats) {
+  const filePath = getStatsPath();
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(stats, null, 2), 'utf8');
+  } catch {
+    // Ignore errors
+  }
+}
+
+export function checkAndDisplayMilestone() {
+  const stats = loadStats();
+  stats.runCount += 1;
+  saveStats(stats);
+
+  const oneDay = 24 * 60 * 60 * 1000;
+  const sevenDays = 7 * oneDay;
+  const isSeventhDayOrLater = Date.now() - stats.firstRunTime >= sevenDays;
+
+  if (stats.runCount > 1) {
+    let shouldShow = false;
+    if (stats.runCount === 10) {
+      shouldShow = true;
+    } else if (isSeventhDayOrLater && !stats.askedMilestone) {
+      shouldShow = true;
+      stats.askedMilestone = true;
+      saveStats(stats);
+    } else if (stats.runCount > 10 && stats.runCount % 10 === 0) {
+      shouldShow = true;
+    }
+
+    if (shouldShow) {
+      console.log('\x1b[36m%s\x1b[0m', '\nLike Figranium? Give us a star on GitHub! ⭐ https://github.com/figranium/n8n-nodes-figranium\n');
+    }
+  }
+}
 
 /**
  * n8n `json`-type collection fields arrive as strings; the Figranium API
@@ -1060,6 +1126,12 @@ export class Figranium implements INodeType {
       } else {
         returnData.push({ json: response as IDataObject, pairedItem: { item: i } });
       }
+    }
+
+    try {
+      checkAndDisplayMilestone();
+    } catch {
+      // Ignore errors so n8n execution is never interrupted
     }
 
     return [returnData];
