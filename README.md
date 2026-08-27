@@ -4,11 +4,16 @@ Official n8n community node for [Figranium](https://figranium.dev) — trigger t
 
 ## Resources and operations
 
-### Task
+### Execute
 
 | Operation | Description |
 |---|---|
-| **Execute** | Run a saved task and return its result. Accepts optional runtime variables. |
+| **Execute Task** | Run a saved task and return its result. Accepts optional runtime variables. |
+
+### Task Actions
+
+| Operation | Description |
+|---|---|
 | **List** | Return all task IDs, names, and descriptions from the server. |
 | **Create** | Create a new automation task (URL, mode, actions, variables, stealth config, and more). |
 | **Update** | Update fields on an existing task. Only the fields you set are sent (partial update). |
@@ -77,12 +82,12 @@ The node uses the `Figranium API` credential type:
 - **Base URL** — your Figranium server address, e.g. `http://localhost:11345`. Trim trailing slashes.
 - **API Key** — stored securely and sent as `x-api-key` on every request.
 
-### Task › Execute
+### Execute › Execute Task
 
-- **Task** — choose from the dropdown, which is populated via `/api/tasks/list`. Each option shows the task name and description (if set).
+- **Task Name or ID** — choose from the dropdown, which is populated via `/api/tasks/list`. Each option shows the task name and description (if set).
 - **Variables** — optional key/value pairs injected at runtime under `variables` in the request body. Names are required; values can be empty strings.
 
-### Task › Create / Update
+### Task Actions › Create / Update
 
 - **Name**, **URL**, **Mode** (`Scrape` / `Agent` / `Headful`) are required on Create; all fields are optional on Update — only what you set is sent as a partial patch.
 - **Additional Fields** / **Update Fields** cover the remaining task config: description, wait, selector, extraction options, rotation/stealth toggles, and three raw-JSON fields:

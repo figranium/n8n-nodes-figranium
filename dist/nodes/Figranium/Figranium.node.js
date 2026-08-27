@@ -92,6 +92,16 @@ class Figranium {
                     noDataExpression: true,
                     options: [
                         {
+                            name: 'Execute',
+                            value: 'execute',
+                            description: 'Run a saved task and return its result',
+                        },
+                        {
+                            name: 'Task Actions',
+                            value: 'task',
+                            description: 'Manage automation tasks (create, list, update, delete)',
+                        },
+                        {
                             name: 'Browser',
                             value: 'browser',
                             description: 'Launch a managed browser session',
@@ -111,15 +121,31 @@ class Figranium {
                             value: 'schedule',
                             description: 'View and manage task schedules',
                         },
+                    ],
+                    default: 'execute',
+                },
+                // ─── EXECUTE operations ───────────────────────────────────────────────
+                {
+                    displayName: 'Operation',
+                    name: 'operation',
+                    type: 'options',
+                    noDataExpression: true,
+                    displayOptions: {
+                        show: {
+                            resource: ['execute'],
+                        },
+                    },
+                    options: [
                         {
-                            name: 'Task',
-                            value: 'task',
-                            description: 'Manage and execute automation tasks',
+                            name: 'Execute Task',
+                            value: 'execute',
+                            description: 'Run a saved task and return its result',
+                            action: 'Execute a task',
                         },
                     ],
-                    default: 'task',
+                    default: 'execute',
                 },
-                // ─── TASK operations ─────────────────────────────────────────────────
+                // ─── TASK ACTIONS operations ─────────────────────────────────────────
                 {
                     displayName: 'Operation',
                     name: 'operation',
@@ -144,12 +170,6 @@ class Figranium {
                             action: 'Delete a task',
                         },
                         {
-                            name: 'Execute',
-                            value: 'execute',
-                            description: 'Run a saved task and return its result',
-                            action: 'Execute a task',
-                        },
-                        {
                             name: 'List',
                             value: 'list',
                             description: 'Return all task IDs, names, and descriptions',
@@ -162,7 +182,7 @@ class Figranium {
                             action: 'Update a task',
                         },
                     ],
-                    default: 'execute',
+                    default: 'list',
                 },
                 // ─── EXECUTION operations ─────────────────────────────────────────────
                 {
@@ -291,7 +311,7 @@ class Figranium {
                     description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
                     displayOptions: {
                         show: {
-                            resource: ['task'],
+                            resource: ['execute', 'task'],
                             operation: ['execute', 'update', 'delete'],
                         },
                     },
@@ -323,7 +343,7 @@ class Figranium {
                     },
                     displayOptions: {
                         show: {
-                            resource: ['task'],
+                            resource: ['execute', 'task'],
                             operation: ['execute'],
                         },
                     },
@@ -727,7 +747,7 @@ class Figranium {
         };
     }
     async execute() {
-        var _a, _b;
+        var _a, _b, _c, _d;
         const items = this.getInputData();
         const returnData = [];
         const credentials = await this.getCredentials('figraniumApi');
@@ -739,8 +759,8 @@ class Figranium {
             const resource = this.getNodeParameter('resource', i);
             const operation = this.getNodeParameter('operation', i);
             let response;
-            // ── TASK ──────────────────────────────────────────────────────────────
-            if (resource === 'task') {
+            // ── EXECUTE ───────────────────────────────────────────────────────────
+            if (resource === 'execute') {
                 if (operation === 'execute') {
                     const taskId = this.getNodeParameter('taskId', i);
                     const variablesRaw = this.getNodeParameter('variables', i);
@@ -749,6 +769,28 @@ class Figranium {
                         const key = (entry.name || '').trim();
                         if (key)
                             variables[key] = (_b = entry.value) !== null && _b !== void 0 ? _b : '';
+                    }
+                    response = await this.helpers.httpRequestWithAuthentication.call(this, 'figraniumApi', {
+                        method: 'POST',
+                        url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}/api`,
+                        body: { variables },
+                        json: true,
+                    });
+                }
+                else {
+                    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported execute operation: ${operation}`, { itemIndex: i });
+                }
+                // ── TASK ──────────────────────────────────────────────────────────────
+            }
+            else if (resource === 'task') {
+                if (operation === 'execute') {
+                    const taskId = this.getNodeParameter('taskId', i);
+                    const variablesRaw = this.getNodeParameter('variables', i);
+                    const variables = {};
+                    for (const entry of (_c = variablesRaw === null || variablesRaw === void 0 ? void 0 : variablesRaw.values) !== null && _c !== void 0 ? _c : []) {
+                        const key = (entry.name || '').trim();
+                        if (key)
+                            variables[key] = (_d = entry.value) !== null && _d !== void 0 ? _d : '';
                     }
                     response = await this.helpers.httpRequestWithAuthentication.call(this, 'figraniumApi', {
                         method: 'POST',
