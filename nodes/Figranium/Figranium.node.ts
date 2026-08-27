@@ -109,6 +109,16 @@ export class Figranium implements INodeType {
         noDataExpression: true,
         options: [
           {
+            name: 'Execute',
+            value: 'execute',
+            description: 'Run a saved task and return its result',
+          },
+          {
+            name: 'Task Actions',
+            value: 'task',
+            description: 'Manage automation tasks (create, list, update, delete)',
+          },
+          {
             name: 'Browser',
             value: 'browser',
             description: 'Launch a managed browser session',
@@ -128,16 +138,33 @@ export class Figranium implements INodeType {
             value: 'schedule',
             description: 'View and manage task schedules',
           },
-          {
-            name: 'Task',
-            value: 'task',
-            description: 'Manage and execute automation tasks',
-          },
         ],
-        default: 'task',
+        default: 'execute',
       },
 
-      // ─── TASK operations ─────────────────────────────────────────────────
+      // ─── EXECUTE operations ───────────────────────────────────────────────
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: {
+          show: {
+            resource: ['execute'],
+          },
+        },
+        options: [
+          {
+            name: 'Execute Task',
+            value: 'execute',
+            description: 'Run a saved task and return its result',
+            action: 'Execute a task',
+          },
+        ],
+        default: 'execute',
+      },
+
+      // ─── TASK ACTIONS operations ─────────────────────────────────────────
       {
         displayName: 'Operation',
         name: 'operation',
@@ -162,12 +189,6 @@ export class Figranium implements INodeType {
             action: 'Delete a task',
           },
           {
-            name: 'Execute',
-            value: 'execute',
-            description: 'Run a saved task and return its result',
-            action: 'Execute a task',
-          },
-          {
             name: 'List',
             value: 'list',
             description: 'Return all task IDs, names, and descriptions',
@@ -180,7 +201,7 @@ export class Figranium implements INodeType {
             action: 'Update a task',
           },
         ],
-        default: 'execute',
+        default: 'list',
       },
 
       // ─── EXECUTION operations ─────────────────────────────────────────────
@@ -316,7 +337,7 @@ export class Figranium implements INodeType {
           'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
         displayOptions: {
           show: {
-            resource: ['task'],
+            resource: ['execute', 'task'],
             operation: ['execute', 'update', 'delete'],
           },
         },
@@ -350,7 +371,7 @@ export class Figranium implements INodeType {
         },
         displayOptions: {
           show: {
-            resource: ['task'],
+            resource: ['execute', 'task'],
             operation: ['execute'],
           },
         },
@@ -776,8 +797,36 @@ export class Figranium implements INodeType {
 
       let response: IDataObject | IDataObject[];
 
+      // ── EXECUTE ───────────────────────────────────────────────────────────
+      if (resource === 'execute') {
+        if (operation === 'execute') {
+          const taskId = this.getNodeParameter('taskId', i) as string;
+          const variablesRaw = this.getNodeParameter('variables', i) as {
+            values?: Array<{ name?: string; value?: string }>;
+          };
+
+          const variables: IDataObject = {};
+          for (const entry of variablesRaw?.values ?? []) {
+            const key = (entry.name || '').trim();
+            if (key) variables[key] = entry.value ?? '';
+          }
+
+          response = await this.helpers.httpRequestWithAuthentication.call(
+            this,
+            'figraniumApi',
+            {
+              method: 'POST' as IHttpRequestMethods,
+              url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}/api`,
+              body: { variables },
+              json: true,
+            },
+          ) as IDataObject;
+        } else {
+          throw new NodeOperationError(this.getNode(), `Unsupported execute operation: ${operation}`, { itemIndex: i });
+        }
+
       // ── TASK ──────────────────────────────────────────────────────────────
-      if (resource === 'task') {
+      } else if (resource === 'task') {
         if (operation === 'execute') {
           const taskId = this.getNodeParameter('taskId', i) as string;
           const variablesRaw = this.getNodeParameter('variables', i) as {
