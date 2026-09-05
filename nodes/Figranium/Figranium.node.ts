@@ -613,6 +613,7 @@ export class Figranium implements INodeType {
         },
         options: [
           { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]', description: 'Array of sequential action step objects' },
+          { displayName: 'Cabinet ID', name: 'cabinetId', type: 'string', default: '', description: 'Cabinet used for intercepted downloads and Upload actions that omit their own Cabinet ID; leave empty to use the default Cabinet' },
           { displayName: 'Description', name: 'description', type: 'string', default: '' },
           { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
           {
@@ -653,6 +654,7 @@ export class Figranium implements INodeType {
         },
         options: [
           { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]' },
+          { displayName: 'Cabinet ID', name: 'cabinetId', type: 'string', default: '', description: 'Cabinet used for intercepted downloads and Upload actions that omit their own Cabinet ID; leave empty to use the default Cabinet' },
           { displayName: 'Description', name: 'description', type: 'string', default: '' },
           { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
           {
