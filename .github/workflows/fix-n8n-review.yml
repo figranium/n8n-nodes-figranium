@@ -29,8 +29,8 @@ jobs:
         run: npm ci
 
       - name: Apply n8n review fixes
-        shell: python
         run: |
+          python - <<'PY'
           from pathlib import Path
           path = Path('nodes/Figranium/Figranium.node.ts')
           text = path.read_text()
@@ -105,6 +105,7 @@ jobs:
           if old not in text:
               raise SystemExit('Expected resource options block not found; refusing to edit')
           path.write_text(text.replace(old, new, 1))
+          PY
 
       - name: Bump patch version
         run: npm version patch --no-git-tag-version
