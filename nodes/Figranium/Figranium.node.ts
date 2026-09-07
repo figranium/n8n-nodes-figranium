@@ -109,19 +109,14 @@ export class Figranium implements INodeType {
         noDataExpression: true,
         options: [
           {
-            name: 'Execute',
-            value: 'execute',
-            description: 'Run a saved task and return its result',
-          },
-          {
-            name: 'Task Actions',
-            value: 'task',
-            description: 'Manage automation tasks (create, list, update, delete)',
-          },
-          {
             name: 'Browser',
             value: 'browser',
             description: 'Launch a managed browser session',
+          },
+          {
+            name: 'Execute',
+            value: 'execute',
+            description: 'Run a saved task and return its result',
           },
           {
             name: 'Execution',
@@ -137,6 +132,11 @@ export class Figranium implements INodeType {
             name: 'Schedule',
             value: 'schedule',
             description: 'View and manage task schedules',
+          },
+          {
+            name: 'Task Action',
+            value: 'task',
+            description: 'Manage automation tasks (create, list, update, delete)',
           },
         ],
         default: 'execute',
