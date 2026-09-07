@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/publish-0.7.1'
 
 jobs:
   build-and-publish:
