@@ -1,3 +1,4 @@
+# Temporary one-time workflow; removes itself after a successful release.
 name: One-time n8n review fix
 
 on:
