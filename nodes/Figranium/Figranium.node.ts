@@ -9,7 +9,7 @@ import type {
   INodeType,
   INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
 const JSON_FIELD_NAMES = ['stealth', 'actions', 'variables'];
 
@@ -91,8 +91,8 @@ export class Figranium implements INodeType {
     defaults: {
       name: 'Figranium',
     },
-    inputs: ['main'],
-    outputs: ['main'],
+    inputs: [NodeConnectionTypes.Main],
+    outputs: [NodeConnectionTypes.Main],
     usableAsTool: true,
     credentials: [
       {
