@@ -4,7 +4,7 @@ export class FigraniumApi implements ICredentialType {
   name = 'figraniumApi';
   displayName = 'Figranium API';
   icon = { light: 'file:figranium_icon_light.svg', dark: 'file:figranium_icon_dark.svg' } as const;
-  documentationUrl = 'https://figranium.com/docs/api-authentication-and-secure-access';
+  documentationUrl = 'https://figranium.dev/docs/n8n-integration';
   properties: INodeProperties[] = [
     {
       displayName: 'Base URL',
