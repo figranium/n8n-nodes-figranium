@@ -1,0 +1,17 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "overrides": [
+    {
+      "files": ["nodes/**/*.ts", "index.ts"],
+      "extends": ["plugin:n8n-nodes-base/nodes"]
+    },
+    {
+      "files": ["credentials/**/*.ts"],
+      "extends": ["plugin:n8n-nodes-base/credentials"],
+      "rules": {
+        "n8n-nodes-base/cred-class-field-documentation-url-miscased": "off"
+      }
+    }
+  ]
+}
