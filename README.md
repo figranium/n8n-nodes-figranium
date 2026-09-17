@@ -36,17 +36,6 @@ Official n8n community node for [Figranium](https://figranium.dev) — trigger t
 | **Describe Schedule** | Validate and preview a schedule config without saving it. |
 | **Get Scheduler Status** | Return the overall status of the task scheduler. |
 
-### Browser
-
-| Operation | Description |
-|---|---|
-| **Open** | Launch or reattach a managed browser session. Currently headful-only. |
-
-### Inspector
-
-| Operation | Description |
-|---|---|
-| **Highlight** | Highlight and inspect elements on an active browser session, with an optional text/selector hint. |
 
 ## Requirements
 
@@ -101,15 +90,6 @@ The node uses the `Figranium API` credential type:
 - Frequency fields (hour, minute, days of week, day of month) appear based on the selected frequency.
 - Cron accepts a standard 5-field expression, e.g. `0 9 * * 1`.
 
-### Browser › Open
-
-- **URL** — optional starting URL for the session.
-- **Mode** is currently informational only — only `Headful` sessions are supported via the VNC stack.
-
-### Inspector › Highlight
-
-- **Session ID** — optional; targets a specific active session. If omitted, the current session is used (or one is launched via **URL**).
-- **Target Hint** — optional text/selector hint to narrow down which elements get highlighted.
 
 ## Usage example — Execute a task with variables
 
