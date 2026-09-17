@@ -9,7 +9,7 @@ import type {
   INodeType,
   INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 const JSON_FIELD_NAMES = ['stealth', 'actions', 'variables'];
 
@@ -91,8 +91,8 @@ export class Figranium implements INodeType {
     defaults: {
       name: 'Figranium',
     },
-    inputs: [NodeConnectionTypes.Main],
-    outputs: [NodeConnectionTypes.Main],
+    inputs: ['main'],
+    outputs: ['main'],
     usableAsTool: true,
     credentials: [
       {
@@ -109,11 +109,6 @@ export class Figranium implements INodeType {
         noDataExpression: true,
         options: [
           {
-            name: 'Browser',
-            value: 'browser',
-            description: 'Launch a managed browser session',
-          },
-          {
             name: 'Execute',
             value: 'execute',
             description: 'Run a saved task and return its result',
@@ -122,11 +117,6 @@ export class Figranium implements INodeType {
             name: 'Execution',
             value: 'execution',
             description: 'Inspect past execution records',
-          },
-          {
-            name: 'Inspector',
-            value: 'inspector',
-            description: 'Highlight and inspect elements on an active browser session',
           },
           {
             name: 'Schedule',
@@ -277,51 +267,6 @@ export class Figranium implements INodeType {
         ],
         default: 'list',
       },
-
-      // ─── BROWSER operations ─────────────────────────────────────────────────
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: {
-          show: {
-            resource: ['browser'],
-          },
-        },
-        options: [
-          {
-            name: 'Open',
-            value: 'open',
-            description: 'Launch or reattach a managed browser session',
-            action: 'Open a browser session',
-          },
-        ],
-        default: 'open',
-      },
-
-      // ─── INSPECTOR operations ───────────────────────────────────────────────
-      {
-        displayName: 'Operation',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: {
-          show: {
-            resource: ['inspector'],
-          },
-        },
-        options: [
-          {
-            name: 'Highlight',
-            value: 'highlight',
-            description: 'Highlight and inspect elements on an active browser session',
-            action: 'Highlight elements',
-          },
-        ],
-        default: 'highlight',
-      },
-
 
       // ─── Shared: Task ID (execute / update / delete) ───────────────────────
       {
@@ -695,90 +640,6 @@ export class Figranium implements INodeType {
         ],
       },
 
-      // ─── Browser: Open ──────────────────────────────────────────────────────
-      {
-        displayName: 'URL',
-        name: 'browserUrl',
-        type: 'string',
-        default: '',
-        description: 'Initial URL to navigate to when the browser opens',
-        displayOptions: {
-          show: {
-            resource: ['browser'],
-            operation: ['open'],
-          },
-        },
-      },
-      {
-        displayName: 'Additional Fields',
-        name: 'browserAdditionalFields',
-        type: 'collection',
-        placeholder: 'Add Field',
-        default: {},
-        displayOptions: {
-          show: {
-            resource: ['browser'],
-            operation: ['open'],
-          },
-        },
-        options: [
-          {
-            displayName: 'Mode',
-            name: 'mode',
-            type: 'options',
-            options: [
-              { name: 'Headful', value: 'headful' },
-              { name: 'Scrape', value: 'scrape' },
-              { name: 'Agent', value: 'agent' },
-            ],
-            default: 'headful',
-            description: 'Informational only — only headful is currently supported via the VNC stack',
-          },
-          { displayName: 'Dev Tools', name: 'devTools', type: 'boolean', default: false, description: 'Whether to open DevTools automatically' },
-        ],
-      },
-
-      // ─── Inspector: Highlight ───────────────────────────────────────────────
-      {
-        displayName: 'Session ID',
-        name: 'sessionId',
-        type: 'string',
-        default: '',
-        description: 'Active browser session ID. Leave empty to use the current session or launch one via URL.',
-        displayOptions: {
-          show: {
-            resource: ['inspector'],
-            operation: ['highlight'],
-          },
-        },
-      },
-      {
-        displayName: 'URL',
-        name: 'inspectorUrl',
-        type: 'string',
-        default: '',
-        description: 'Optional URL to navigate to before highlighting',
-        displayOptions: {
-          show: {
-            resource: ['inspector'],
-            operation: ['highlight'],
-          },
-        },
-      },
-      {
-        displayName: 'Target Hint',
-        name: 'targetHint',
-        type: 'string',
-        default: '',
-        description: 'Optional text or hint (e.g. "login button") to find and highlight target elements',
-        displayOptions: {
-          show: {
-            resource: ['inspector'],
-            operation: ['highlight'],
-          },
-        },
-      },
-
     ],
   };
 
@@ -1048,55 +909,6 @@ export class Figranium implements INodeType {
           ) as IDataObject;
         } else {
           throw new NodeOperationError(this.getNode(), `Unsupported schedule operation: ${operation}`, { itemIndex: i });
-        }
-
-      // ── BROWSER ───────────────────────────────────────────────────────────
-      } else if (resource === 'browser') {
-        if (operation === 'open') {
-          const browserUrl = this.getNodeParameter('browserUrl', i) as string;
-          const additionalFields = this.getNodeParameter('browserAdditionalFields', i, {}) as IDataObject;
-
-          const body: IDataObject = { ...additionalFields };
-          if (browserUrl) body.url = browserUrl;
-
-          response = await this.helpers.httpRequestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'POST' as IHttpRequestMethods,
-              url: `${baseUrl}/api/browser/open`,
-              body,
-              json: true,
-            },
-          ) as IDataObject;
-        } else {
-          throw new NodeOperationError(this.getNode(), `Unsupported browser operation: ${operation}`, { itemIndex: i });
-        }
-
-      // ── INSPECTOR ─────────────────────────────────────────────────────────
-      } else if (resource === 'inspector') {
-        if (operation === 'highlight') {
-          const sessionId = this.getNodeParameter('sessionId', i) as string;
-          const inspectorUrl = this.getNodeParameter('inspectorUrl', i) as string;
-          const targetHint = this.getNodeParameter('targetHint', i) as string;
-
-          const body: IDataObject = {};
-          if (sessionId) body.sessionId = sessionId;
-          if (inspectorUrl) body.url = inspectorUrl;
-          if (targetHint) body.targetHint = targetHint;
-
-          response = await this.helpers.httpRequestWithAuthentication.call(
-            this,
-            'figraniumApi',
-            {
-              method: 'POST' as IHttpRequestMethods,
-              url: `${baseUrl}/api/inspector/highlight`,
-              body,
-              json: true,
-            },
-          ) as IDataObject;
-        } else {
-          throw new NodeOperationError(this.getNode(), `Unsupported inspector operation: ${operation}`, { itemIndex: i });
         }
 
       } else {
