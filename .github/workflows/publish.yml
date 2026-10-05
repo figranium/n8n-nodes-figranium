@@ -64,7 +64,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="v$(node -p "require('./package.json').version")"
-          gh release view "$VERSION" >/dev/null 2>&1 || gh release create "$VERSION" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes
+          NOTES=$(cat <<'EOF'
+## Changes
+
+- Updated the Figranium node inputs and outputs to use `NodeConnectionTypes.Main` from `n8n-workflow`.
+- Resolves the n8n community package review findings for connection type declarations.
+EOF
+          )
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release edit "$VERSION" --notes "$NOTES"
+          else
+            gh release create "$VERSION" --target "$GITHUB_SHA" --title "$VERSION" --notes "$NOTES"
+          fi
 
       - name: Publish to npm with Provenance
         if: github.event_name != 'release'
