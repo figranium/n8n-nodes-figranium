@@ -58,7 +58,16 @@ jobs:
           git commit -m 'fix: satisfy n8n community package review'
           git push
 
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="v$(node -p "require('./package.json').version")"
+          gh release view "$VERSION" >/dev/null 2>&1 || gh release create "$VERSION" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes
+
       - name: Publish to npm with Provenance
+        if: github.event_name != 'release'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
