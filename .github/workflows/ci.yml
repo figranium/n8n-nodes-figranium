@@ -31,5 +31,16 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Validate n8n community package
+      - name: Check actual package contents
+        run: |
+          npm pack --dry-run --json > "$RUNNER_TEMP/pack.json"
+          node - "$RUNNER_TEMP/pack.json" <<'NODE'
+          const fs = require('node:fs');
+          const files = new Set(JSON.parse(fs.readFileSync(process.argv[2], 'utf8'))[0].files.map((file) => file.path));
+          for (const path of ['dist/index.js', 'dist/nodes/Figranium/Figranium.node.js', 'dist/credentials/FigraniumApi.credentials.js']) {
+            if (!files.has(path)) throw new Error(`Missing packaged file: ${path}`);
+          }
+          NODE
+
+      - name: Verify published npm package provenance
         run: npx --yes @n8n/scan-community-package n8n-nodes-figranium
