@@ -3,17 +3,12 @@ name: Publish to npm with Provenance
 on:
   release:
     types: [published]
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/publish.yml'
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       id-token: write
 
     steps:
@@ -58,27 +53,7 @@ jobs:
           git commit -m 'fix: satisfy n8n community package review'
           git push
 
-      - name: Create GitHub Release
-        if: github.event_name == 'push'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          VERSION="v$(node -p "require('./package.json').version")"
-          NOTES=$(cat <<'EOF'
-## Changes
-
-- Updated the Figranium node inputs and outputs to use `NodeConnectionTypes.Main` from `n8n-workflow`.
-- Resolves the n8n community package review findings for connection type declarations.
-EOF
-          )
-          if gh release view "$VERSION" >/dev/null 2>&1; then
-            gh release edit "$VERSION" --notes "$NOTES"
-          else
-            gh release create "$VERSION" --target "$GITHUB_SHA" --title "$VERSION" --notes "$NOTES"
-          fi
-
       - name: Publish to npm with Provenance
-        if: github.event_name != 'release'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
