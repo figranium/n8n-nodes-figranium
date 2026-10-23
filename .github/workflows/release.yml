@@ -28,7 +28,7 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" >/dev/null
 
       - name: Checkout release tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
