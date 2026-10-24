@@ -34,6 +34,23 @@ function parseJsonFields(node: INode, fields: IDataObject): IDataObject {
   return result;
 }
 
+/**
+ * Figranium v0.21 uses cookieStateId instead of statelessExecution.
+ * Keep existing n8n workflows working, including PATCH requests where the
+ * server no longer translates the legacy field.
+ */
+function normalizeTaskFields(node: INode, fields: IDataObject): IDataObject {
+  const result = parseJsonFields(node, fields);
+  if (result.statelessExecution === true && result.cookieStateId === undefined) {
+    result.cookieStateId = null;
+  }
+  delete result.statelessExecution;
+  if (result.cookieStateId === '') {
+    delete result.cookieStateId;
+  }
+  return result;
+}
+
 export class Figranium implements INodeType {
   methods = {
     loadOptions: {
@@ -559,6 +576,7 @@ export class Figranium implements INodeType {
         options: [
           { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]', description: 'Array of sequential action step objects' },
           { displayName: 'Cabinet ID', name: 'cabinetId', type: 'string', default: '', description: 'Cabinet used for intercepted downloads and Upload actions that omit their own Cabinet ID; leave empty to use the default Cabinet' },
+          { displayName: 'Cookie State ID', name: 'cookieStateId', type: 'string', default: '', description: 'ID of an existing Cookie State. Leave unset to use the default Cookie State.' },
           { displayName: 'Description', name: 'description', type: 'string', default: '' },
           { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
           {
@@ -600,6 +618,7 @@ export class Figranium implements INodeType {
         options: [
           { displayName: 'Actions (JSON)', name: 'actions', type: 'json', default: '[]' },
           { displayName: 'Cabinet ID', name: 'cabinetId', type: 'string', default: '', description: 'Cabinet used for intercepted downloads and Upload actions that omit their own Cabinet ID; leave empty to use the default Cabinet' },
+          { displayName: 'Cookie State ID', name: 'cookieStateId', type: 'string', default: '', description: 'ID of an existing Cookie State. Leave unset to use the default Cookie State.' },
           { displayName: 'Description', name: 'description', type: 'string', default: '' },
           { displayName: 'Disable Recording', name: 'disableRecording', type: 'boolean', default: false },
           {
@@ -728,7 +747,7 @@ export class Figranium implements INodeType {
           const mode = this.getNodeParameter('mode', i) as string;
           const additionalFields = this.getNodeParameter('taskAdditionalFields', i, {}) as IDataObject;
 
-          const body: IDataObject = { name, url, mode, ...parseJsonFields(this.getNode(), additionalFields) };
+          const body: IDataObject = { name, url, mode, ...normalizeTaskFields(this.getNode(), additionalFields) };
 
           response = await this.helpers.httpRequestWithAuthentication.call(
             this,
@@ -744,7 +763,7 @@ export class Figranium implements INodeType {
           const taskId = this.getNodeParameter('taskId', i) as string;
           const updateFields = this.getNodeParameter('taskUpdateFields', i, {}) as IDataObject;
 
-          const body: IDataObject = parseJsonFields(this.getNode(), updateFields);
+          const body: IDataObject = normalizeTaskFields(this.getNode(), updateFields);
 
           response = await this.helpers.httpRequestWithAuthentication.call(
             this,
