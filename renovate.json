@@ -2,5 +2,14 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "allowedVersions": "<7",
+      "description": "TypeScript 7 has no compatible compiler API for @typescript-eslint/parser 8; revisit when supported."
+    }
   ]
 }
