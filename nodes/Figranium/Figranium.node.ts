@@ -41,7 +41,7 @@ function parseJsonFields(node: INode, fields: IDataObject): IDataObject {
  */
 function normalizeTaskFields(node: INode, fields: IDataObject): IDataObject {
   const result = parseJsonFields(node, fields);
-  if (result.statelessExecution === true && result.cookieStateId === undefined) {
+  if (result.statelessExecution === true && (result.cookieStateId === undefined || result.cookieStateId === '')) {
     result.cookieStateId = null;
   }
   delete result.statelessExecution;
