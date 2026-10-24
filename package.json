@@ -42,7 +42,7 @@
     "n8n-core": "^2.0.0",
     "n8n-nodes-base": "^2.0.0",
     "n8n-workflow": "^2.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^7.0.0"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
