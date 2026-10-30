@@ -70,6 +70,7 @@ The node uses the `Figranium API` credential type:
 
 - **Base URL** — your Figranium server address, e.g. `http://localhost:11345`. Trim trailing slashes.
 - **API Key** — stored securely and sent as `x-api-key` on every request.
+- **Redirects** — authenticated requests do not follow HTTP redirects. Configure the canonical Figranium server URL directly; this prevents a redirect destination from receiving your scoped API key.
 
 ### Execute › Execute Task
 

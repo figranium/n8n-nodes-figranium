@@ -70,6 +70,7 @@ export class Figranium implements INodeType {
               method: 'GET' as IHttpRequestMethods,
               url: `${baseUrl}/api/tasks/list`,
               json: true,
+              disableFollowRedirect: true,
             },
           );
 
@@ -701,6 +702,7 @@ export class Figranium implements INodeType {
               url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}/api`,
               body: { variables },
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else {
@@ -729,6 +731,7 @@ export class Figranium implements INodeType {
               url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}/api`,
               body: { variables },
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'list') {
@@ -739,6 +742,7 @@ export class Figranium implements INodeType {
               method: 'GET' as IHttpRequestMethods,
               url: `${baseUrl}/api/tasks/list`,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'create') {
@@ -757,6 +761,7 @@ export class Figranium implements INodeType {
               url: `${baseUrl}/api/tasks`,
               body,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'update') {
@@ -773,6 +778,7 @@ export class Figranium implements INodeType {
               url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}`,
               body,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'delete') {
@@ -785,6 +791,7 @@ export class Figranium implements INodeType {
               method: 'DELETE' as IHttpRequestMethods,
               url: `${baseUrl}/api/tasks/${encodeURIComponent(taskId)}`,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else {
@@ -801,6 +808,7 @@ export class Figranium implements INodeType {
               method: 'GET' as IHttpRequestMethods,
               url: `${baseUrl}/api/executions/list`,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else {
@@ -817,6 +825,7 @@ export class Figranium implements INodeType {
               method: 'GET' as IHttpRequestMethods,
               url: `${baseUrl}/api/schedules`,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'getAllStatus') {
@@ -827,6 +836,7 @@ export class Figranium implements INodeType {
               method: 'GET' as IHttpRequestMethods,
               url: `${baseUrl}/api/schedules/status/all`,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'getStatus') {
@@ -838,6 +848,7 @@ export class Figranium implements INodeType {
               method: 'GET' as IHttpRequestMethods,
               url: `${baseUrl}/api/schedules/${encodeURIComponent(taskId)}/status`,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'delete') {
@@ -849,6 +860,7 @@ export class Figranium implements INodeType {
               method: 'DELETE' as IHttpRequestMethods,
               url: `${baseUrl}/api/schedules/${encodeURIComponent(taskId)}`,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'set') {
@@ -888,6 +900,7 @@ export class Figranium implements INodeType {
               url: `${baseUrl}/api/schedules/${encodeURIComponent(taskId)}`,
               body,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else if (operation === 'describe') {
@@ -924,6 +937,7 @@ export class Figranium implements INodeType {
               url: `${baseUrl}/api/schedules/${encodeURIComponent(taskId)}/describe`,
               body,
               json: true,
+              disableFollowRedirect: true,
             },
           ) as IDataObject;
         } else {

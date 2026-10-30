@@ -29,7 +29,7 @@
     "build": "tsc -p tsconfig.json && copyfiles \"nodes/**/*.{png,svg}\" \"credentials/**/*.{png,svg}\" dist",
     "lint": "eslint \"nodes/**/*.{ts,js}\" \"credentials/**/*.{ts,js}\" index.ts",
     "lintfix": "eslint \"nodes/**/*.{ts,js}\" \"credentials/**/*.{ts,js}\" index.ts --fix",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "node --test tests/security.test.cjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {},
