@@ -39,6 +39,7 @@ export class FigraniumApi implements ICredentialType {
       baseURL: '={{$credentials.baseUrl}}',
       url: '/api/tasks/list',
       method: 'GET',
+      disableFollowRedirect: true,
     },
   };
 }
