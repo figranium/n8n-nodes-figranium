@@ -6,15 +6,15 @@ class FigraniumApi {
         this.name = 'figraniumApi';
         this.displayName = 'Figranium API';
         this.icon = { light: 'file:figranium_icon_light.svg', dark: 'file:figranium_icon_dark.svg' };
-        this.documentationUrl = 'https://figranium.com/docs/api-authentication-and-secure-access';
+        this.documentationUrl = 'https://figranium.dev/docs/n8n-integration';
         this.properties = [
             {
                 displayName: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'http://localhost:11345',
+                default: 'https://cloud.figranium.dev',
                 required: true,
-                description: 'Figranium server base URL',
+                description: 'Figranium Cloud URL or your self-hosted server URL',
             },
             {
                 displayName: 'API Key',
@@ -39,6 +39,7 @@ class FigraniumApi {
                 baseURL: '={{$credentials.baseUrl}}',
                 url: '/api/tasks/list',
                 method: 'GET',
+                disableFollowRedirect: true,
             },
         };
     }

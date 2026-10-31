@@ -10,9 +10,9 @@ export class FigraniumApi implements ICredentialType {
       displayName: 'Base URL',
       name: 'baseUrl',
       type: 'string',
-      default: 'http://localhost:11345',
+      default: 'https://cloud.figranium.dev',
       required: true,
-      description: 'Figranium server base URL',
+      description: 'Figranium Cloud URL or your self-hosted server URL',
     },
     {
       displayName: 'API Key',
