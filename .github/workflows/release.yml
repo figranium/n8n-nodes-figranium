@@ -1,6 +1,9 @@
 name: Create GitHub Release
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/release.yml']
   workflow_dispatch:
     inputs:
       tag:
@@ -20,21 +23,30 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Create one-time release tag
+        if: github.event_name == 'push'
+        uses: actions/checkout@v7
+      - name: Tag v0.7.5
+        if: github.event_name == 'push'
+        run: |
+          test "$(node -p "require('./package.json').version")" = '0.7.5'
+          git tag v0.7.5
+          git push origin refs/tags/v0.7.5
       - name: Validate tag
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ inputs.tag || 'v0.7.5' }}
         run: |
           gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" >/dev/null
 
       - name: Checkout release tag
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.tag || 'v0.7.5' }}
 
       - name: Verify tag matches package version
         env:
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ inputs.tag || 'v0.7.5' }}
         run: |
           EXPECTED="v$(node -p "require('./package.json').version")"
           if [ "$TAG" != "$EXPECTED" ]; then
@@ -45,8 +57,8 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag }}
-          NOTES: ${{ inputs.notes }}
+          TAG: ${{ inputs.tag || 'v0.7.5' }}
+          NOTES: ${{ inputs.notes || 'Default new connections to Figranium Cloud; self-hosted URLs remain supported.' }}
         run: |
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG already exists; nothing to do."
@@ -63,5 +75,5 @@ jobs:
     needs: release
     uses: ./.github/workflows/publish.yml
     with:
-      tag: ${{ inputs.tag }}
+      tag: ${{ inputs.tag || 'v0.7.5' }}
     secrets: inherit
